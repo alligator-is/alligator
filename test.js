@@ -36,7 +36,7 @@ test('start Peers', function (t) {
       kad: {
         timeout: ms
       },
-      bootstrap: [api.util.isWindows()?'shs+tcp://' + api.swarm.peerID + '@localhost:3436':'shs+utp://' + api.swarm.peerID + '@localhost:3436'],
+      bootstrap: [api.util.isWindows()?'shs+tcp://' + api.swarm.peerID + '@localhost:3334':'shs+utp://' + api.swarm.peerID + '@localhost:3436'],
     })
     peers.push(peer)
     setTimeout(peer.start.bind(peer, function (err) {
