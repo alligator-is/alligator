@@ -1,30 +1,17 @@
 var ms = require('ms')
 var test = require('tape')
-var Peer = require('./')
-var api = new Peer({
-  listen: [
-    'shs+ws://localhost:3332',
-    'shs+tcp://localhost:3334',
-    'shs+utp://localhost:3436'
-  ],
-  bootstrap: [],
-  swim: {
-    host: '127.0.0.1',
-    port: 3959,
-    codec: 'json'
-  }
-})
 
-var peers = [api]
+var Peer = require('./')
+
+var peers = []
+
 test('start Peers', function (t) {
   t.plan(31)
-  api.start(function (err) {
-    t.notOk(err)
-  })
 
   var last = 0
-
-  for (var i = 0; i < 30; i++) {
+  var firstPeer = null
+ 
+  for (var i = 0; i < 31; i++) {
 
     var peer = new Peer({
       timeout: ms('20s'),
@@ -36,16 +23,17 @@ test('start Peers', function (t) {
       kad: {
         timeout: ms
       },
-      bootstrap: [api.util.isWindows()?'shs+tcp://' + api.swarm.peerID + '@localhost:3334':'shs+utp://' + api.swarm.peerID + '@localhost:3436'],
+      bootstrap: firstPeer == null ? [] : [firstPeer.util.isWindows() ? 'shs+tcp://' + firstPeer.id + '@localhost:4237' : 'shs+utp://' + firstPeer.id + '@localhost:4237'],
     })
+
+    if (i === 0) firstPeer = peer
+    
     peers.push(peer)
+    
     setTimeout(peer.start.bind(peer, function (err) {
-      console.log('started')
       t.notOk(err)
-
     }), i * 300)
-
-
+    
     last += 4
   }
 })
