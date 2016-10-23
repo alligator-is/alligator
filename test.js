@@ -20,9 +20,6 @@ test('start Peers', function (t) {
         'shs+tcp://localhost:' + (4237 + i + 1 + last),
         'shs+utp://localhost:' + (4237 + i + 2 + last)
       ],
-      kad: {
-        timeout: ms
-      },
       bootstrap: firstPeer == null ? [] : [firstPeer.util.isWindows() ? 'shs+tcp://' + firstPeer.id + '@localhost:4237' : 'shs+utp://' + firstPeer.id + '@localhost:4237'],
     })
 
