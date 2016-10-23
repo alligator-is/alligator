@@ -22,12 +22,19 @@ module.exports = function (api) {
 
   kad.constants.T_RESPONSETIMEOUT = ms('15s')
 
-  function Node(params) {
-    if (!(this instanceof Node)) return new Node(params);
+  function Node(address) {
+    if (!(this instanceof Node)) return new Node(address);
     this._rInterval = null
     this._eInterval = null
-    kad.Node.call(this, params);
+    var transport = Transport(address)
+    var logger = new kad.Logger(0, 'kad:')
+    var router = new kad.Router({
+      transport: transport,
+      logger: logger
+    });
 
+    this._quasar = new Quasar(router) 
+    kad.Node.call(this, { router: router, logger: logger, transport: transport, storage: kad.storage.FS('./tmp') });
   }
 
   inherits(Node, kad.Node);
@@ -71,9 +78,9 @@ module.exports = function (api) {
     return kad.utils.createID(this.id, api.config.info.encoding)
   };
 
-  function Transport(api, addrs) {
+  function Transport(addrs) {
     if (!(this instanceof Transport)) {
-      return new Transport(api, addrs);
+      return new Transport(addrs);
     }
     this.protoNames = api.swarm.protoNames()
     kad.RPC.call(this, Contact(addrs), api.config.kad || {});
@@ -135,39 +142,36 @@ module.exports = function (api) {
   return {
     name: 'kad',
     manifest: mdm.manifest(doc),
+    
     write: function (data) {
       return _.drain(node._rpc.receive.bind(node._rpc), function () { })
     },
+    
     put: function (key, value) {
       if (node == null) throw new Error('Service unavailable')
       node.put(key, value)
     },
+    
     get: function (key, cb) {
       if (node == null) return cb(new Error('Service unavailable'))
       node.get(key, cb)
     },
+    
     subscribe: function (topic, cb) {
       if (node == null) throw new Error('Service unavailable')
-      node.topics.subscribe(topic, cb)
+      node._quasar.subscribe(topic, cb)
     },
+    
     publish: function (topic, msg) {
       if (node == null) throw new Error('Service unavailable')
-      node.topics.publish(topic, msg)
+      node._quasar.publish(topic, msg)
     },
+
     start: function (cb) {
       var events = api.swarm.events()
       _(events, api.swarm.on({
         ready: function (e) {
-          var transport = Transport(api, e.address)
-          var logger = new kad.Logger(0, 'kad:')
-          var router = new kad.Router({
-            transport: transport,
-            logger: logger
-          });
-
-          var topics = new Quasar(router);
-          node = new Node({ router: router, logger: logger, transport: transport, storage: kad.storage.FS('./tmp') })
-          node.topics = topics
+          node = new Node(e.address)
           cb()
           delete cb
 
@@ -182,6 +186,7 @@ module.exports = function (api) {
       })
       )
     },
+ 
     stop: function (cb) {
       node.close(cb)
     }
