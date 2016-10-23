@@ -14,6 +14,7 @@
   "author": "Markus Wunderlin",
   "license": "MIT",
   "dependencies": {
+    "chloride": "^2.2.4",
     "icebreaker": "1.0.3",
     "icebreaker-peer": "~2.3.0",
     "kad": "^1.5.20",
