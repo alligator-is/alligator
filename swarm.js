@@ -15,9 +15,10 @@ var handshake = require('./handshake')
 
 function para(events) {
   return paramap(function handle(e, cb) {
-    if (events[e.type] != null && typeof events[e.type] === 'function') return events[e.type].call(this, e, function (d) {
-      cb(null, d)
-    })
+    if (events[e.type] != null && typeof events[e.type] === 'function') 
+      return events[e.type].call(this, e, function (d) {
+        cb(null, d)
+      })
     cb(null, e)
   })
 }
@@ -117,7 +118,12 @@ var Swarm = module.exports = function Swarm(api) {
               err = 'closing the connection peerID is undefined or null ' + api.id
               close = true
             }
-            if (shutdown === true) { err = 'peer cannot accept new connections, because it is shutting down' close = true }
+
+            if (shutdown === true) {
+               err = 'peer cannot accept new connections, because it is shutting down' 
+               close = true 
+            }
+            
             e.id = ++gid
             peers[e.id] = e
             e.protocols = []
