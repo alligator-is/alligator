@@ -39,6 +39,7 @@
     "osenv": "^0.1.4",
     "pouchdb": "^6.3.4",
     "pouchdb-upsert": "^2.2.0",
+    "pull-abortable": "^4.1.1",
     "pull-inactivity": "*",
     "pull-live": "^1.0.1",
     "pull-notify": "^0.1.1",
