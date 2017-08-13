@@ -1,88 +1,101 @@
 var _ = require('icebreaker')
 var Swarm = require('./swarm')
-var Kad = require('./kad')
 var url = require('url')
-var cl = require('chloride')
+var PeerInfo = require('./peerInfo')
+var Logger = require('./logger')
+var DHT = require('./dht')
+var DB = require('./db')
+var ms = require('ms')
+var paramap = require('pull-paramap')
 
 function Peer(config) {
-  if (!(this instanceof Peer)) return new Peer(params)
+  if (!(this instanceof Peer)) return new Peer(config)
   this.config = config
   this.config.info = this.config.info || PeerInfo()
+
   this.state = 'ended'
   this.util = Swarm.util
   this.id = this.util.encode(config.info.id, config.info.encoding)
-}
 
-var proto = Peer.prototype = {}
+  var _protos = []
+  var _notify = _.notify()
 
-proto.start = function (cb) {
-  if (this.state === 'ended') {
-    this.state = 'start'
-    var self = this
+  this.events = function () {
+    return _notify.listen()
+  }
 
-    self.swarm = new Swarm(this)
-    self.kad = Kad(this)
-    self.swarm.addProtocol(self.kad)
+  this.events.combine = require('./combine')
+  this.events.asyncMap = require('icebreaker-network/lib/asyncMap')
+  this.events.map = require('icebreaker-network/lib/map')
+  this.events.on = function (events) {
+    return _(paramap(function (item, cb) { cb(null, item) }), require('icebreaker-network/lib/on')(events))
+  }
 
-    self.config.listen.filter(function (addr) {
-      return self.swarm.protoNames().indexOf(url.parse(addr).protocol) !== -1
-    })
-      .forEach(function (addr) {
-        self.swarm.listen(addr)
+  this.logger = require('./logger')({ config: this.config, events: this.events, _notify: _notify })
+
+  this.start = function (cb) {
+    if (this.state === 'ended') {
+      this.state = 'start'
+      var self = this
+      var swarm = Swarm(this)
+      var plugins = []
+
+      var plugins = [DB, DHT].concat(_protos).map(function (plug) {
+        var plug = plug(self)
+        self.swarm.addProtocol(plug)
+        return plug
       })
 
-    _(self.swarm, self.swarm.on({
-      ready: function (e) {
-        self.kad.start(function () {
+      self.config.listen.filter(function (addr) {
+        return self.swarm.protoNames().indexOf(url.parse(addr).protocol) !== -1
+      })
+        .forEach(function (addr) {
+          self.swarm.listen(addr, { timeout: ms('40s') })
+        })
+
+      var combined = self.events.combine.apply(null, [swarm].concat(plugins.slice(0)))
+      self._end = combined.end
+      _(combined, self.events.asyncMap({
+        ready: function (e, done) {
           self.state = e.type
           if (cb) cb(null, e)
           cb = null
-        })
-      },
-      end: function (err) {
-        this.state = 'ended'
-      }
-    })
-    )
+          done(e)
+        }
+      }), _.drain(_notify, function (err) {
+        self.state = 'ended'
+        _notify.end(err)
+      })
+
+      )
+
+    }
+  }
+
+  this.addProtocol = function (protocol) {
+    _protos.push(protocol)
+  }
+
+  this.stop = function (cb) {
+    var self = this
+
+    if (this._end === null) return
+    if (self.state != 'ended')
+      _(_notify.listen(), self.events.on({
+        end: function (err) {
+          if (cb) cb(err)
+          cb = null
+          self.state = 'ended'
+          self._end = null
+        }
+      }))
+
+    if (self._end != null) {
+      self._end()
+      delete self._end
+    }
   }
 }
 
-proto.stop = function (cb) {
-  var self = this
-
-  if (this.kad === null || this.swarm === null) return
-
-  self.kad.stop(function () { 
-      self.kad = null
-      
-    if (cb) _(self.swarm.events(), self.swarm.on({
-      end: function (err) {
-        if (cb) cb(err)
-        cb = null
-        self.state = 'ended'
-        self.swarm = null;
-        self.kad = null
-      }
-    }))
-
-    if (self.swarm != null && self.swarm.end !=null) {
-      self.swarm.end()
-      delete self.swarm.end
-    }
-  })
-}
 
 module.exports = Peer
-
-var PeerInfo = module.exports.PeerInfo = function (params) {
-  params = params || {}
-  var keys = params.keys || cl.crypto_sign_keypair()
-  var l
-
-  return {
-    appKey: params.appKey || 'alligator@1.0.0',
-    encoding: params.encoding || 'base58',
-    keys: keys,
-    id: keys.publicKey
-  }
-}

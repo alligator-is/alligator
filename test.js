@@ -1,45 +1,59 @@
 var ms = require('ms')
 var test = require('tape')
-
 var Peer = require('./')
-
 var peers = []
+var os = require('os')
+var address = require('network-address')
+var ms = require('ms')
+var home = require('osenv').home
+var name = process.env.alligator_appname || 'alligator'
+var path = require('path')
+var Peer = require('./')
+var start = 20
 
 test('start Peers', function (t) {
-  t.plan(31)
+  t.plan(start)
 
   var last = 0
   var firstPeer = null
- 
-  for (var i = 0; i < 31; i++) {
 
-    var peer = new Peer({
-      timeout: ms('20s'),
+  for (var i = 0; i < start; i++) {
+
+    var config = require('rc')(name, {
+      logLevel: 6,
       listen: [
-        'shs+ws://localhost:' + (4237 + i + last),
-        'shs+tcp://localhost:' + (4237 + i + 1 + last),
-        'shs+utp://localhost:' + (4237 + i + 2 + last)
-      ],
-      bootstrap: firstPeer == null ? [] : [firstPeer.util.isWindows() ? 'shs+tcp://' + firstPeer.id + '@localhost:4237' : 'shs+utp://' + firstPeer.id + '@localhost:4237'],
+        'shs+tcp://[' + address.ipv6() + ']:' + (4238 + i + last)
+      ], path: path.join(home(), '.' + name),
+      bootstrap: firstPeer == null ? [] : ['shs+tcp://' + firstPeer.id + '@[' + address.ipv6() + ']:4238']
     })
+
+    var mkdirp = require('mkdirp')
+    mkdirp.sync(config.path)
+    config.info = require('./peerInfo').loadOrCreateSync(path.join(config.path, 'peerInfo-' + i))
+
+    var peer = new Peer(config)
+    if (i === 0) firstPeer = peer
 
     if (i === 0) firstPeer = peer
-    
     peers.push(peer)
-    
-    setTimeout(peer.start.bind(peer, function (err) {
+    peer.start(function (err) {
       t.notOk(err)
-    }), i * 300)
-    
-    last += 4
+    })
+
+    last += 1
   }
+
+})
+return;
+test('stop Peers', function (t) {
+  t.plan(start)
+  setTimeout(function () {
+    var i = 0
+    peers.forEach(function (p) {
+      p.stop(function (e) {
+        t.notOk(e)
+      })
+    })
+  }, ms('30m'))
 })
 
-test('stop Peers', function (t) {
-  t.plan(31)
-  peers.forEach(function (p) {
-    p.stop(function (e) {
-      t.notOk(e)
-    })
-  })
-})

@@ -1,2 +1,0 @@
-# kad
-## write: sink
