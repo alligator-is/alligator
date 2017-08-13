@@ -20,7 +20,6 @@ module.exports = function (api, name) {
   var source = notify.listen()
   source.events = notify.listen
   var dir = path.join(api.config.path, api.id, name)
-  console.log(dir)
 
   var db = new PouchDB(dir)
 
@@ -164,10 +163,7 @@ module.exports = function (api, name) {
       if (!ls[e.id]) {
         ls[e.id] = Abortable(done)
         _(api.swarm.connections[e.id].peer.db.ls({ old: false, live: true, include_docs: true }), ls[e.id], _.drain(function (change) {
-          upsert(change.doc, function () {
-            console.log(arguments)
-
-          })
+          upsert(change.doc, function () {})
         }, function (err) {
           done(err)
         }))
