@@ -109,7 +109,10 @@ module.exports = function (api, name) {
         }
         opts.since = change.last_seq
         if (end != true && change.results.length > 0) return cb(null, change.results)
-        if (change.results.length < opts.limit) { changes.cancel() changes = null return cb(end = true, null) }
+        if (change.results.length < opts.limit) { 
+          changes.cancel() 
+          changes = null
+          return cb(end = true, null) }
       })
 
     }, _.flatten(), _.filter(_filter))
