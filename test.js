@@ -44,7 +44,7 @@ test('start Peers', function (t) {
   }
 
 })
-return;
+
 test('stop Peers', function (t) {
   t.plan(start)
   setTimeout(function () {
@@ -54,6 +54,6 @@ test('stop Peers', function (t) {
         t.notOk(e)
       })
     })
-  }, ms('30m'))
+  }, ms('3m'))
 })
 
