@@ -1,10 +1,11 @@
 {
   "name": "alligator",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "bin" : "./bin.js" 
   },
   "keywords": [
     "icebreaker",
