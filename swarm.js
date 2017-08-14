@@ -126,7 +126,7 @@ var Swarm = module.exports = function Swarm(api) {
             peers[e.id] = e
             e.protocols = []
             Object.keys(remote).forEach(function (i) { e.protocols.push(i) })
-            e.manifest = e.remote
+            e.manifest = remote
 
             var muxrpc = MRPC(remote, _manifest)(_api, null, e.id)
 
