@@ -91,7 +91,7 @@ var Swarm = module.exports = function Swarm(api) {
                 delete e.rpcCallback
                 c(err)
               }
-              api.logger.error('manifest handshake error', err)
+              api.logger.error('handshake error', err)
               return cb(null)
             }
 

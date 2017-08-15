@@ -25,8 +25,7 @@ module.exports = function (api) {
   config.bucketSize = config.bucketSize || 8
   config.alpha = config.alpha || 3
   config.bucketRefresh = config.bucketRefresh || ms('60m')
-  config.bucketRefresh = config.replicate || ms('60m')
-
+  config.replicate = config.replicate || ms('60m')
 
   config.pingInterval = config.pingInterval || ms('15s')
   config.replicate = config.replicate || ms('60m')
@@ -117,10 +116,16 @@ module.exports = function (api) {
   }
 
   var timers = {}
-  timers.bootstrap = asyncInterval(function (next) { bootstrap(next) }, ms('20s'))
+  timers.bootstrap = asyncInterval(function (next) { 
+    if(timers.bootstrap){
+      if (bucket.count() < 1) return bootstrap(function (conn) {
+        next()
+      })
+      next()
+   }}, ms('40s'))
   timers.ping = {}
-  timers.refresh = asyncInterval(function (next) { refresh(next) }, config.bucketRefresh)
-  timers.replicate = asyncInterval(function (next) { replicate(next) }, config.replicate)
+  timers.refresh = asyncInterval(function (next) { if(timers.refresh)refresh(next) }, config.bucketRefresh)
+  timers.replicate = asyncInterval(function (next) { if(timers.replicate)replicate(next) }, config.replicate)
 
   function ping(e, cb) {
     api.logger.debug('ping peer ', e.peerID)
@@ -202,9 +207,7 @@ module.exports = function (api) {
     }
 
     if (bucket.count() < 1) return bootstrap(function (conn) {
-      if (conn) return update(function () {
-        cb(conn)
-      })
+      if (conn) return update(cb)
       if (cb) cb()
     })
 
@@ -268,6 +271,7 @@ module.exports = function (api) {
       },
       end: function () {
         notify.end()
+        source.end();
       }
     }))
 
@@ -321,7 +325,6 @@ module.exports = function (api) {
   source.end = function (err) {
     for (var i in timers) {
       if (timers[i] && timers[i] != null && _.isFunction(timers[i].clear)) {
-
         timers[i].clear()
         timers[i] = null
       }
