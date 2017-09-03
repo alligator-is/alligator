@@ -266,12 +266,11 @@ module.exports = function (api) {
           e.isCloser = false
           notify({ type: 'notcloser', id: e.id, peerID: e.peerID })
         }
-
-        api.logger.info('disconnection from', e.peerID, 'on ', api.id)
+        api.logger.info('disconnection from', e.peerID, 'on ', api.id)  
       },
       end: function () {
         notify.end()
-        source.end();
+        source.end()
       }
     }))
 
@@ -329,6 +328,13 @@ module.exports = function (api) {
         timers[i] = null
       }
     }
+    
+    for (var t in timers.ping) {
+      if(timers.ping[t] !=null){
+        clearInterval(timers.ping[t])
+        timers.ping[t] = null
+      }      
+    } 
   }
 
   return source
