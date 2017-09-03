@@ -8,7 +8,6 @@ var MRPC = require('muxrpc')
 var URL = require('url')
 var clone = require('lodash.clonedeep')
 var paramap = require('pull-paramap')
-var abortable = require('pull-abortable')
 var handshake = require('./handshake')
 
 function para(events) {
@@ -46,34 +45,7 @@ var Swarm = module.exports = function Swarm(api) {
   api.config.swarm = api.config.swarm || {}
   var _api = api
 
-  var timeout = function (d, time, onTimeout) {
-    var ts = Date.now()
-    time = time || ms('20s')
-    var closed = false
-    var timer = setInterval(function () {
-      if (Date.now() - ts >= time) end()
-
-    }, time)
-
-    var end = function () {
-      if (closed === true) return
-      clearInterval(timer)
-      closed = true
-      onTimeout()
-    }
-
-    var lastChange = function () {
-      return _.asyncMap(function (data, cb) {
-        ts = Date.now()
-        cb(null, data)
-      })
-    }
-
-    return {
-      source: _(d.source, abortable(end), lastChange()),
-      sink: _(lastChange(), abortable(end), d.sink)
-    }
-  }
+  var timeout = require('./timeout')
 
   function source() {
     if (_ready === false) {
@@ -127,21 +99,22 @@ var Swarm = module.exports = function Swarm(api) {
             e.protocols = []
             Object.keys(remote).forEach(function (i) { e.protocols.push(i) })
             e.manifest = remote
-
             var muxrpc = MRPC(remote, _manifest)(_api, null, e.id)
+            
+            var t
 
-            _(rest, timeout(muxrpc.createStream(), api.config.swarm.timeout = api.config.swarm.timeout || ms('40s'), function () {
+            _(rest, t=timeout(muxrpc.createStream(), api.config.swarm.timeout = api.config.swarm.timeout || ms('40s'), function () {
               if (this.end) this.end()
               close = true
             }.bind(e)), rest)
             e.peer = muxrpc
-            e.end = muxrpc.close.bind(muxrpc, err || true, function (err) {
-              if (err) api.logger.error(err)
+            e.end = muxrpc.close.bind(muxrpc, err || true, function (_err) {
+              if (_err) api.logger.error(_err)
+              else if(err!=null)api.logger.warn(err)
+              t.end()
             })
             if (close === true) {
-              muxrpc.close(err, function () {
-                if (err) api.logger.warn(err)
-              })
+              e.end();
               return cb(e)
             }
 
@@ -151,7 +124,7 @@ var Swarm = module.exports = function Swarm(api) {
             cb(e)
           }, e.address == null), e)
         },
-        disconnection: function (e, cb) {
+        disconnection: function (e, cb) { 
           if (e.id != null && peers[e.id] != null) delete peers[e.id]
           cb(e)
         }
