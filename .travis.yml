@@ -4,7 +4,8 @@ os:
   - linux
   - osx
 env:
-  - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+  global:
+    - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
   matrix:
     - TRAVIS_NODE_VERSION="6"
     - TRAVIS_NODE_VERSION="7"
