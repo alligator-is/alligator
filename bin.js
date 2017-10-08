@@ -38,11 +38,17 @@ var api = {
     
     
     var peer = new Peer(config)
+    if(!target && fs.existsSync("./package.json")){
+      target="."
+    }
+    
     if(target){
       var main = require(path.join(path.resolve(target),"/package.json")).main
       peer.logger.log("Plugin loaded",path.join(path.resolve(target),"/"+main)  )
       peer.addProtocol(require(path.join(path.resolve(target),"/"+main)  ))
     }
+   
+    
 
     peer.start()
 
