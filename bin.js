@@ -19,7 +19,6 @@ var network = require('icebreaker-network')
 var api = {
   usage: valid.async(function(command,cb){ cb(null,mdm.usage(commands,command))  }, ['string?']),
   start: valid.async(function(target,opts,cb){
-    console.log(arguments);
     if (typeof target == 'function') cb = target, target = null
     if (typeof opts == 'function')   cb = opts, opts = null
     if (typeof target == 'object') opts = target, target = null
