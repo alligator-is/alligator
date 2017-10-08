@@ -29,7 +29,7 @@ test('start Peers', function (t) {
 
     var mkdirp = require('mkdirp')
     mkdirp.sync(config.path)
-    config.info = require('./peerInfo').loadOrCreateSync(path.join(config.path, 'peerInfo-' + i))
+    config.info = require('./lib/peerInfo').loadOrCreateSync(path.join(config.path, 'peerInfo-' + i))
 
     var peer = new Peer(config)
     if (i === 0) firstPeer = peer
