@@ -7,7 +7,7 @@ var name = process.env.alligator_appname || 'alligator'
 var path = require('path')
 var Peer = require('./')
 var muxrpcli = require("muxrpcli")
-
+var mkdirp = require("mkdirp")
 var mdm = require('mdmanifest')
 var fs   = require('fs')
 var path = require('path')
@@ -31,6 +31,7 @@ var api = {
     })
 
     config.dht = {}
+    mkdirp.sync(config.path)
     config.info = require('./lib/peerInfo.js').loadOrCreateSync(path.join(config.path, 'peerInfo'))
 
     if(opts && opts.b)config.bootstrap = opts.b.split(",")
