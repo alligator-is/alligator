@@ -21,7 +21,6 @@ before_install:
   - npm install -g node-gyp
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-5; fi
   - ${CXX} --version
-  - node-gyp rebuild
 install:
   - npm install
 script:
