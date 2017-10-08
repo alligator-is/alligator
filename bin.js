@@ -19,9 +19,10 @@ var network = require('icebreaker-network')
 var api = {
   usage: valid.async(function(command,cb){ cb(null,mdm.usage(commands,command))  }, ['string?']),
   start: valid.async(function(target,opts,cb){
+    console.log(arguments);
     if (typeof target == 'function') cb = target, target = null
     if (typeof opts == 'function')   cb = opts, opts = null
-    if (typeof target == 'object') opt = target, target = null
+    if (typeof target == 'object') opts = target, target = null
     
     var config = require('rc')(name, {
       listen: [
@@ -33,7 +34,6 @@ var api = {
     config.dht = {}
     mkdirp.sync(config.path)
     config.info = require('./lib/peerInfo.js').loadOrCreateSync(path.join(config.path, 'peerInfo'))
-
     if(opts && opts.b)config.bootstrap = opts.b.split(",")
     
     
