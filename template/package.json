@@ -1,0 +1,17 @@
+{
+    "name":"",
+    "main": "index.js",
+    "version":"0.1.0",
+    "description":"",
+    "author":"",
+    "scripts": {
+      "start":"node node_modules/alligator/bin.js start .",
+      "test": "node node_modules/.bin/tape test/*.js"
+    },
+    "dependencies":{},
+    "devDependencies": {
+      "tape": "^4.8.0"
+    },
+    "license": "MIT"
+  }
+  
