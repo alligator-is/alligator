@@ -25,7 +25,6 @@ var api = {
     
     var config = require('rc')(name, {
       listen: [
-        'shs+utp://[' + address.ipv4() + ']:4238',
         'shs+tcp://[' + address.ipv4() + ']:4239',
         'shs+ws://[' + address.ipv4() + ']:4238',
       ], path: path.join(home(), '.' + name)
@@ -41,7 +40,7 @@ var api = {
     if(!target && fs.existsSync("./package.json")){
       target="."
     }
-    
+
     if(target){
       var main = require(path.join(path.resolve(target),"/package.json")).main
       peer.logger.log("Plugin loaded",path.join(path.resolve(target),"/"+main)  )
