@@ -25,8 +25,8 @@ var api = {
     
     var config = require('rc')(name, {
       listen: [
-        'shs+tcp://[' + address.ipv4() + ']:4239',
-        'shs+ws://[' + address.ipv4() + ']:4238',
+        'shs+tcp://[' + address.ipv6() + ']:4239',
+        'shs+ws://[' + address.ipv6() + ']:4238',
       ], path: path.join(home(), '.' + name)
     })
 
