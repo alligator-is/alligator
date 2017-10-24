@@ -22,14 +22,21 @@ var api = {
     if (typeof target == 'function') cb = target, target = null
     if (typeof opts == 'function')   cb = opts, opts = null
     if (typeof target == 'object') opts = target, target = null
-    
-    var config = require('rc')(name, {
-      listen: [
-        'shs+tcp://[' + address.ipv6() + ']:4239',
-        'shs+ws://[' + address.ipv6() + ']:4238',
-      ], path: path.join(home(), '.' + name)
-    })
 
+    var listen = [
+      'shs+tcp://[' + address.ipv6() + ']:4239',
+      'shs+ws://[' + address.ipv6() + ']:4238'
+    ] 
+
+    if(address.ipv6() ==="::1")
+    listen = [
+      'shs+utp://' + address.ipv4() + ':4239',
+      'shs+tcp://' + address.ipv4() + ':4239',
+      'shs+ws://' + address.ipv4() + ':4238'
+    ]
+   
+
+    var config = require('rc')(name, { listen: listen, path: path.join(home(), '.' + name)})
     config.dht = {}
     mkdirp.sync(config.path)
     config.info = require('./lib/peerInfo.js').loadOrCreateSync(path.join(config.path, 'peerInfo'))
@@ -46,9 +53,6 @@ var api = {
       peer.logger.log("Plugin loaded",path.join(path.resolve(target),"/"+main)  )
       peer.addProtocol(require(path.join(path.resolve(target),"/"+main)  ))
     }
-   
-    
-
     peer.start()
 
     process.on("SIGINT", peer.stop.bind(peer))
