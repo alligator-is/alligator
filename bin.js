@@ -30,7 +30,6 @@ var api = {
 
     if(address.ipv6() ==="::1")
     listen = [
-      'shs+utp://' + address.ipv4() + ':4239',
       'shs+tcp://' + address.ipv4() + ':4239',
       'shs+ws://' + address.ipv4() + ':4238'
     ]
