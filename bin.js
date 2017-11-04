@@ -22,21 +22,24 @@ var api = {
     if (typeof target == 'function') cb = target, target = null
     if (typeof opts == 'function')   cb = opts, opts = null
     if (typeof target == 'object') opts = target, target = null
-
-    var listen = [
+    opts = opts||{}
+    opts.config = opts.config||{}
+    var listen = opts.config.listen||[
       'shs+tcp://[' + address.ipv6() + ']:4239',
       'shs+ws://[' + address.ipv6() + ']:4238'
     ] 
 
-    if(address.ipv6() ==="::1")
+    if(address.ipv6() ==="::1" && !opts.config.listen)
     listen = [
       'shs+tcp://' + address.ipv4() + ':4239',
       'shs+ws://' + address.ipv4() + ':4238'
     ]
    
-
-    var config = require('rc')(name, { listen: listen, path: path.join(home(), '.' + name)})
-    config.dht = {}
+    opts.config.listen  = listen
+    opts.config.path = path.join(home(), '.' + name)
+    
+    var config = require('rc')(name, opts.config)
+    config.dht = config.dht||{}
     mkdirp.sync(config.path)
     config.info = require('./lib/peerInfo.js').loadOrCreateSync(path.join(config.path, 'peerInfo'))
     if(opts && opts.b)config.bootstrap = opts.b.split(",")
@@ -52,6 +55,7 @@ var api = {
       peer.logger.log("Plugin loaded",path.join(path.resolve(target),"/"+main)  )
       peer.addProtocol(require(path.join(path.resolve(target),"/"+main)  ))
     }
+
     peer.start()
 
     process.on("SIGINT", peer.stop.bind(peer))
