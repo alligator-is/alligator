@@ -24,6 +24,13 @@ var api = {
     if (typeof target == 'object') opts = target, target = null
     opts = opts||{}
     opts.config = opts.config||{}
+
+    if(opts.config.listen && !Array.isArray(opts.config.listen ))opts.config.listen=[opts.config.listen]
+    
+    if(Array.isArray(opts.config.listen))opts.config.listen=opts.config.listen.map(function(addr){
+      return addr.replace("[::1]","["+address.ipv6()+"]").replace("://localhost","["+address.ipv4()+"]")
+    })
+
     var listen = opts.config.listen||[
       'shs+tcp://[' + address.ipv6() + ']:4239',
       'shs+ws://[' + address.ipv6() + ']:4238'
