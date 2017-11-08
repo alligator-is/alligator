@@ -1,6 +1,6 @@
 {
   "name": "alligator",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -29,8 +29,8 @@
     "chalk": "^2.3.0",
     "chloride": "^2.2.7",
     "icebreaker": "~2.0.1",
-    "icebreaker-network": "^0.7.7",
-    "icebreaker-peer": "~2.4.1",
+    "icebreaker-network": "^0.7.8",
+    "icebreaker-peer": "~2.4.2",
     "k-bucket": "^3.3.0",
     "lodash.clonedeep": "^4.5.0",
     "mdmanifest": "^1.0.8",
