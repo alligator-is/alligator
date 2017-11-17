@@ -27,7 +27,7 @@
   "dependencies": {
     "asyncinterval": "0.0.7",
     "chalk": "^2.3.0",
-    "chloride": "^2.2.7",
+    "chloride": "^2.2.8",
     "icebreaker": "~2.0.1",
     "icebreaker-network": "^0.7.8",
     "icebreaker-peer": "~2.4.2",
@@ -52,7 +52,7 @@
     "pull-paramap": "^1.2.2",
     "pull-sort": "^1.0.1",
     "pull-stream": "^3.6.0",
-    "rc": "^1.2.1"
+    "rc": "^1.2.2"
   },
   "devDependencies": {
     "tape": "^4.8.0"
