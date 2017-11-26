@@ -22,9 +22,9 @@ test('start Peers', function (t) {
     var config = require('rc')(name, {
       logLevel: 6,
       listen: [
-        'shs+tcp://[' + address.ipv6() + ']:' + (4238 + i + last)
+        'shs+tcp://[' + address.ipv6() + ']:' + (4208 + i + last)
       ], path: path.join(home(), '.' + name),
-      bootstrap: firstPeer == null ? [] : ['shs+tcp://' + firstPeer.id + '@[' + address.ipv6() + ']:4238']
+      bootstrap: firstPeer == null ? [] : ['shs+tcp://' + firstPeer.id + '@[' + address.ipv6() + ']:4208']
     })
 
     var mkdirp = require('mkdirp')
