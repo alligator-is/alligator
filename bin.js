@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var address = require('network-address')
-var ms = require('ms')
 var home = require('osenv').home
 var name = process.env.alligator_appname || 'alligator'
 var path = require('path')
@@ -10,11 +9,10 @@ var muxrpcli = require("muxrpcli")
 var mkdirp = require("mkdirp")
 var mdm = require('mdmanifest')
 var fs   = require('fs')
-var path = require('path')
 var docs  = path.dirname(fs.realpathSync(__filename))
 var commands =fs.readFileSync(path.join(docs,'bin.md')).toString()
 var valid = require('muxrpc-validation')()
-var network = require('icebreaker-network')
+var os = require('os')
 
 var api = {
   usage: valid.async(function(command,cb){ cb(null,mdm.usage(commands,command))  }, ['string?']),
@@ -33,7 +31,7 @@ var api = {
 
     var listen = opts.config.listen||[
       'shs+tcp://[' + address.ipv6() + ']:4239',
-      'shs+ws://[' + address.ipv6() + ']:4238'
+      'shs+ws://[' + address.ipv6() + ']:4238' 
     ] 
 
     if(address.ipv6() ==="::1" && !opts.config.listen)
@@ -41,7 +39,9 @@ var api = {
       'shs+tcp://' + address.ipv4() + ':4239',
       'shs+ws://' + address.ipv4() + ':4238'
     ]
-   
+
+    listen.push("shs+tcp+unix://"+path.join("/",os.tmpdir(),name+".sock"))
+
     opts.config.listen  = listen
     opts.config.path = path.join(home(), '.' + name)
     
@@ -63,12 +63,12 @@ var api = {
       peer.addProtocol(require(path.join(path.resolve(target),"/"+main)  ))
     }
 
-    peer.start()
-
     process.on("SIGINT", peer.stop.bind(peer))
     process.on("SIGHUP", peer.stop.bind(peer))
     process.on('SIGUSR2', peer.stop.bind(peer, peer.start.bind(peer)))
-    
+
+    peer.start()
+
   },['string?'],['object?'],['string', 'object']),
   init:valid.async(function(cb){
     if(!fs.existsSync("./package.json")){
