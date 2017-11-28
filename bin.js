@@ -13,10 +13,14 @@ var docs  = path.dirname(fs.realpathSync(__filename))
 var commands =fs.readFileSync(path.join(docs,'bin.md')).toString()
 var valid = require('muxrpc-validation')()
 var os = require('os')
+var PullCont = require('pull-cont')
+var connect = require("./lib/client.js")
+var _ = require("icebreaker")
 
 var api = {
   usage: valid.async(function(command,cb){ cb(null,mdm.usage(commands,command))  }, ['string?']),
   start: valid.async(function(target,opts,cb){
+    connect(function(err,e){
     if (typeof target == 'function') cb = target, target = null
     if (typeof opts == 'function')   cb = opts, opts = null
     if (typeof target == 'object') opts = target, target = null
@@ -51,24 +55,26 @@ var api = {
     config.info = require('./lib/peerInfo.js').loadOrCreateSync(path.join(config.path, 'peerInfo'))
     if(opts && opts.b)config.bootstrap = opts.b.split(",")
     
-    
     var peer = new Peer(config)
     if(!target && fs.existsSync("./package.json")){
       target="."
     }
-
+    if(e){
+      peer.logger.error("Can't start because " + name + " is already running  – shut it down first!")
+      return e.end()
+    }
     if(target){
       var main = require(path.join(path.resolve(target),"/package.json")).main
       peer.logger.log("Plugin loaded",path.join(path.resolve(target),"/"+main)  )
       peer.addProtocol(require(path.join(path.resolve(target),"/"+main)  ))
     }
-
+    
     process.on("SIGINT", peer.stop.bind(peer))
     process.on("SIGHUP", peer.stop.bind(peer))
     process.on('SIGUSR2', peer.stop.bind(peer, peer.start.bind(peer)))
 
     peer.start()
-
+  })
   },['string?'],['object?'],['string', 'object']),
   init:valid.async(function(cb){
     if(!fs.existsSync("./package.json")){
@@ -89,6 +95,22 @@ var api = {
     else console.warn('index.js already exists.')
 
     cb()
+  }),
+  ls:valid.source(function(opts){
+    return PullCont(function(cb){
+      connect(function(err,e){
+        if(err) cb(err);
+        cb(null,e.peer.db.ls({old:true,live:false,include_docs: true}))
+      })
+    })
+  }),
+  stop:valid.async(function(cb){
+      connect(function(err,e){
+        if(err) return cb(err)
+        e.peer.swarm.stop(function(err){
+            cb(null,"Alligator is stopped")
+        })
+      })
   })
 }
 

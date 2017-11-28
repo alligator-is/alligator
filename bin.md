@@ -15,7 +15,21 @@ start {target string} [-b]
   - b: string, address to bootstrap peer
 
 ## init: async
+
 Create an project
+
 ```bash
 init
+```
+
+## ls: source
+list of apis
+```bash
+ls
+```
+
+## stop: async
+stop the alligator
+```bash
+stop
 ```
