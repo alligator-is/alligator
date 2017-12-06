@@ -14,8 +14,11 @@ var commands =fs.readFileSync(path.join(docs,'bin.md')).toString()
 var valid = require('muxrpc-validation')()
 var os = require('os')
 var PullCont = require('pull-cont')
-var connect = require("./lib/client.js")
 var _ = require("icebreaker")
+
+var configDir = path.join(home(), '.' + name)
+var peerInfo = require('./lib/peerInfo.js').loadOrCreateSync(path.join(configDir, 'peerInfo'))
+var connect = require("./lib/client.js").bind(null,"shs+tcp+unix://" +encodeURIComponent(JSON.parse(peerInfo.toJSON())["id"]) +"@"+  path.join("/",os.tmpdir(),name+".sock"))
 
 var api = {
   usage: valid.async(function(command,cb){ cb(null,mdm.usage(commands,command))  }, ['string?']),
@@ -47,22 +50,21 @@ var api = {
     listen.push("shs+tcp+unix://"+path.join("/",os.tmpdir(),name+".sock"))
 
     opts.config.listen  = listen
-    opts.config.path = path.join(home(), '.' + name)
+    opts.config.path = configDir
     
     var config = require('rc')(name, opts.config)
     config.dht = config.dht||{}
     mkdirp.sync(config.path)
-    config.info = require('./lib/peerInfo.js').loadOrCreateSync(path.join(config.path, 'peerInfo'))
+    config.info = peerInfo
     if(opts && opts.b)config.bootstrap = opts.b.split(",")
     
     var peer = new Peer(config)
-    if(!target && fs.existsSync("./package.json")){
-      target="."
-    }
+    
     if(e){
       peer.logger.error("Can't start because " + name + " is already running  – shut it down first!")
       return e.end()
     }
+
     if(target){
       var main = require(path.join(path.resolve(target),"/package.json")).main
       peer.logger.log("Plugin loaded",path.join(path.resolve(target),"/"+main)  )
@@ -75,6 +77,7 @@ var api = {
 
     peer.start()
   })
+  
   },['string?'],['object?'],['string', 'object']),
   init:valid.async(function(cb){
     if(!fs.existsSync("./package.json")){
