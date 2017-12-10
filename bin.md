@@ -10,6 +10,7 @@ Start an alligator
 start {target string} [-b]
 
 ```
+
 - target: path, to your project directory
 - opts
   - b: string, address to bootstrap peer
@@ -23,7 +24,7 @@ init
 ```
 
 ## ls: source
-list of apis
+list of Seen apis
 ```bash
 ls
 ```

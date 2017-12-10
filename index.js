@@ -1,1 +1,1 @@
-module.exports = require('./lib/peer')
+module.exports = require('./lib/api')
