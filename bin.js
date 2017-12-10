@@ -116,11 +116,6 @@ connect(function (err, e) {
 
       cb()
     }),
-    ls: valid.source(function (opts) {
-      if (!e) return _.error(err || true)
-      return e.peer.db.ls({ old: true, live: false, include_docs: true })
-
-    }),
     stop: valid.async(function (cb) {
       if (err) return cb(err)
       e.peer.cli.stop(function () {

@@ -23,14 +23,8 @@ Create an project
 init
 ```
 
-## ls: source
-list of Seen apis
-```bash
-ls
-```
-
 ## stop: async
-stop the alligator
+Stop the alligator
 ```bash
 stop
 ```
