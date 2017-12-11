@@ -1,7 +1,7 @@
 ## usage: async
 
 ## stop: async
-stop the api
+Stop the alligator
 ```bash
 stop
 ```

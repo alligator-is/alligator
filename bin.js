@@ -24,7 +24,7 @@ connect(function (err, e) {
 
   var api = {
     usage: valid.async(function (command, cb) {
-      var usage = Manifest.usage(command)
+      var usage = Manifest.usage({command:command})
       if (command && usage) return cb(null, usage)
       if (e && e.peer)
         return e.peer.cli.usage(command, function (err, data) {
