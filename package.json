@@ -1,6 +1,6 @@
 {
   "name": "alligator",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -26,13 +26,13 @@
   },
   "dependencies": {
     "asyncinterval": "0.0.7",
-    "chalk": "^2.3.0",
+    "chalk": "^2.3.1",
     "chloride": "^2.2.8",
     "flat": "^4.0.0",
-    "icebreaker": "~2.0.1",
-    "icebreaker-network": "^0.7.12",
-    "icebreaker-peer": "^2.4.9",
-    "k-bucket": "^3.3.0",
+    "icebreaker": "~2.0.2",
+    "icebreaker-network": "^0.7.13",
+    "icebreaker-peer": "^2.4.10",
+    "k-bucket": "^3.3.1",
     "lodash.clonedeep": "^4.5.0",
     "lodash.endswith": "^4.2.1",
     "lodash.pick": "^4.4.0",
@@ -41,13 +41,13 @@
     "mkdirp": "^0.5.1",
     "moment": "^2.19.3",
     "ms": "^2.0.0",
-    "muxrpc": "~6.3.3",
+    "muxrpc": "^7.0.1",
     "muxrpc-validation": "^3.0.0",
     "muxrpcli": "^1.1.0",
     "network-address": "^1.1.2",
-    "osenv": "^0.1.4",
-    "pouchdb-adapter-leveldb": "^6.3.4",
-    "pouchdb-core": "^6.3.4",
+    "osenv": "^0.1.5",
+    "pouchdb-adapter-leveldb": "^6.4.3",
+    "pouchdb-core": "^6.4.3",
     "pouchdb-upsert": "^2.2.0",
     "pull-abortable": "^4.1.1",
     "pull-cont": "^0.1.1",
@@ -56,10 +56,10 @@
     "pull-live": "^1.0.1",
     "pull-notify": "^0.1.1",
     "pull-paramap": "^1.2.2",
-    "pull-stream": "^3.6.0",
-    "rc": "^1.2.2"
+    "pull-stream": "^3.6.2",
+    "rc": "^1.2.5"
   },
   "devDependencies": {
-    "tape": "^4.8.0"
+    "tape": "^4.9.0"
   }
 }
