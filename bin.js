@@ -19,6 +19,7 @@ var _ = require("icebreaker")
 var configDir = path.join(home(), '.' + name)
 var peerInfo = require('./lib/peerInfo.js').loadOrCreateSync(path.join(configDir, 'peerInfo'))
 var connect = require("./lib/client.js").bind(null, "shs+tcp+unix://" + encodeURIComponent(JSON.parse(peerInfo.toJSON())["id"]) + "@" + path.join("/", os.tmpdir(), name + ".sock"))
+var docs  = path.dirname(fs.realpathSync(__filename))
 
 connect(function (err, e) {
 
@@ -97,6 +98,7 @@ connect(function (err, e) {
 
     }, ['string?'], ['object?'], ['string', 'object']),
     init: valid.async(function (cb) {
+    
       if (!fs.existsSync("./package.json")) {
         var p = require(path.join(docs, '/template/package.json'))
         p.dependencies.alligator = require('./package.json').version
