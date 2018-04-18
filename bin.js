@@ -109,12 +109,20 @@ connect(function (err, e) {
       }
       else console.warn('package.json already exists.')
 
+      if (!fs.existsSync('./index.md')) {
+
+        fs.writeFileSync('./index.md', fs.readFileSync(path.join(docs, '/template/index.md'), 'utf8'))
+        console.log('index.md created.')
+      }
+      else console.warn('index.js already exists.')
+
       if (!fs.existsSync('./index.js')) {
 
         fs.writeFileSync('./index.js', fs.readFileSync(path.join(docs, '/template/index.js'), 'utf8'))
         console.log('index.js created.')
       }
       else console.warn('index.js already exists.')
+
 
       cb()
     }),
