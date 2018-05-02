@@ -17,6 +17,9 @@ var merge = require('map-merge')
 var pick = require('lodash.pick')
 var _ = require("icebreaker")
 var configDir = path.join(home(), '.' + name)
+
+mkdirp.sync(configDir);
+
 var peerInfo = require('./lib/peerInfo.js').loadOrCreateSync(path.join(configDir, 'peerInfo'))
 var connect = require("./lib/client.js").bind(null, "shs+tcp+unix://" + encodeURIComponent(JSON.parse(peerInfo.toJSON())["id"]) + "@" + path.join("/", os.tmpdir(), name + ".sock"))
 var docs  = path.dirname(fs.realpathSync(__filename))
@@ -72,7 +75,6 @@ connect(function (err, e) {
 
       var config = require('rc')(name, opts.config)
       config.dht = config.dht || {}
-      mkdirp.sync(config.path)
       config.info = peerInfo
       if (opts && opts.b) config.bootstrap = opts.b.split(",")
 
