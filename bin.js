@@ -31,7 +31,7 @@ connect(function (err, e) {
       var usage = Manifest.usage({command:command})
       if (command && usage) return cb(null, usage)
       if (e && e.peer)
-        return e.peer.cli.usage(command, function (err, data) {
+        return e.peer.cli.usage(command||null, function (err, data) {
           if (err) return cb(err)
           if (data) {
             data = data.replace("\nCommands:\n", "")
