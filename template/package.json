@@ -5,13 +5,9 @@
     "description":"",
     "author":"",
     "scripts": {
-      "start":"node node_modules/alligator/bin.js start",
-      "test": "node node_modules/.bin/tape test/*.js"
+      "start":"npx alligator start --target ."
     },
-    "dependencies":{},
-    "devDependencies": {
-      "tape": "^4.8.0"
-    },
+    "peerDependencies":{},
     "license": "MIT"
   }
   

@@ -1,11 +1,11 @@
-module.exports = function(api){
-    var md  = api.manifest("./index.md", __filename)
-    return {
-        path:"test",
-        manifest:md.manifest(),
-        usage:md.usage,
-        hello:function(cb){
-            cb(null,"world")
-        }
+const { api, Action } = require("alligator")
+
+api.actions.echo = Action({
+    type: "async",
+    description: "returns a echo",
+    input: "string",
+    defaults: "hello world",
+    run: (str, cb) => {
+        return cb(null, str)
     }
-}
+})

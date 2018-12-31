@@ -1,150 +1,249 @@
 #!/usr/bin/env node
+const { Action, _, api } = require('./')
+const { Peer, Connect, Local } = require("icebreaker-rpc")
+const mkdirp = require("mkdirp")
+const path = require('path')
+const os = require('os')
+const CLI = require("./lib/cli")
+const address = require('network-address')
+const url = require('url')
+const ms = require('ms')
+const fs = require("fs")
+const home = require('osenv').home
+const test = api.config && api.config.test || null
+const name = process.env.alligator_appname || test || 'alligator'
+const appKey = process.env.alligator_appkey || test ? "test" : 'alligator@1.0.0'
+const dir = path.dirname(fs.realpathSync(__filename))
+const Timeout = require("./lib/timeout")
 
-var address = require('network-address')
-var home = require('osenv').home
-var name = process.env.alligator_appname || 'alligator'
-var path = require('path')
-var Peer = require('./')
-var muxrpcli = require("muxrpcli")
-var mkdirp = require("mkdirp")
-var Manifest = require("./lib/manifest")("./bin.md", __filename)
-var fs = require('fs')
-var flatten = require("flat").flatten
-var unflatten = require("flat").unflatten
-var valid = require('muxrpc-validation')()
-var os = require('os')
-var merge = require('map-merge')
-var pick = require('lodash.pick')
-var _ = require("icebreaker")
-var configDir = path.join(home(), '.' + name)
+api.actions = Local()
 
+api.config = api.config || {}
+const configDir = api.config.path || path.join(home(), '.' + name)
 mkdirp.sync(configDir);
 
-var peerInfo = require('./lib/peerInfo.js').loadOrCreateSync(path.join(configDir, 'peerInfo'))
-var connect = require("./lib/client.js").bind(null, "shs+tcp+unix://" + encodeURIComponent(JSON.parse(peerInfo.toJSON())["id"]) + "@" + path.join("/", os.tmpdir(), name + ".sock"))
-var docs  = path.dirname(fs.realpathSync(__filename))
+const peerInfo = require('./lib/peerInfo.js').loadOrCreateSync(path.join(configDir, 'peerInfo'), { appKey: appKey })
+api.id = JSON.parse(peerInfo.toJSON())["keys"]["publicKey"]
 
-connect(function (err, e) {
+api.config.listen = api.config.listen || [
+  'shs+tcp://[::]:4239'
+]
 
-  var api = {
-    usage: valid.async(function (command, cb) {
-      var usage = Manifest.usage({command:command})
-      if (command && usage) return cb(null, usage)
-      if (e && e.peer)
-        return e.peer.cli.usage(command||null, function (err, data) {
-          if (err) return cb(err)
-          if (data) {
-            data = data.replace("\nCommands:\n", "")
+if (address.ipv6() === "::1")
+  api.config.listen = api.config.listen || [
+    'shs+tcp://0.0.0.0:4239',
+    'shs+ws://0.0.0.0:4238'
+  ]
 
-            if (usage && !command && data) data = usage + "\n" + data
-          }
-          if (command && !data) return api.usage(false, cb)
-          cb(null, data)
-        })
-      if (command) return cb("command " + command + " not found")
-      cb(null, usage)
-    }, ['string?']),
-    start: valid.async(function (target, opts, cb) {
-      if (typeof target == 'function') cb = target, target = null
-      if (typeof opts == 'function') cb = opts, opts = null
-      if (typeof target == 'object') opts = target, target = null
-      opts = opts || {}
-      opts.config = opts.config || {}
+api.config.logLevel = api.config.logLevel || 7
 
-      if (opts.config.listen && !Array.isArray(opts.config.listen)) opts.config.listen = [opts.config.listen]
+api.config.path = configDir
+if (!api.config.test) api.config = require('rc')(name, api.config)
 
-      if (Array.isArray(opts.config.listen)) opts.config.listen = opts.config.listen.map(function (addr) {
-        return addr.replace("[::1]", "[" + address.ipv6() + "]").replace("://localhost", "[" + address.ipv4() + "]")
-      })
+Object.assign(api.config, peerInfo)
 
-      var listen = opts.config.listen || [
-        'shs+tcp://[' + address.ipv6() + ']:4239',
-        'shs+ws://[' + address.ipv6() + ']:4238'
-      ]
+require("./lib/logger")
 
-      if (address.ipv6() === "::1" && !opts.config.listen)
-        listen = [
-          'shs+tcp://' + address.ipv4() + ':4239',
-          'shs+ws://' + address.ipv4() + ':4238'
-        ]
+const connect = Connect.bind(null, "shs+tcp+unix://" + encodeURIComponent(api.id) + "@" + path.join("/", os.tmpdir(), name + ".sock"), null, peerInfo)
 
-      listen.push("shs+tcp+unix://" + path.join("/", os.tmpdir(), name + ".sock"))
+const events = _.events()
+api.events = events.listen
+api.events.on = require("icebreaker-network").on
+api.events.map = require("icebreaker-network").map
+api.events.asyncMap = require("icebreaker-network").asyncMap
+api.events.paraMap = require("icebreaker-network").paraMap
+api.events.combine = require("icebreaker-network").combine
 
-      opts.config.listen = listen
-      opts.config.path = configDir
+let e
 
-      var config = require('rc')(name, opts.config)
-      config.dht = config.dht || {}
-      config.info = peerInfo
-      if (opts && opts.b) config.bootstrap = opts.b.split(",")
+api.actions.start = Action({
+  type: "async",
+  desc: "Starts the server",
+  usage: {
+    target: "path, to your project directory",
+  },
+  input: {
+    target: "string?",
+    listen: "array?|string?",
+    logLevel: "number",
+    bootstrap: "array?|string?"
+  },
+  defaults: {
+    listen: api.config.listen,
+    logLevel: api.config.logLevel,
+  },
+  run: (opts, cb) => {
+    if (_.isFunction(opts)) {
+      cb = cb || opts
+      opts = {}
+    }
 
-      var peer = new Peer(config)
+    if (_.isString(opts.listen)) opts.listen = [opts.listen]
 
-      if (e) {
-        peer.logger.error("Can't start because " + name + " is already running  – shut it down first!")
-        return e.end()
+    api.config.listen = opts.listen
+    api.config.logLevel = opts.logLevel
+
+    if (e) {
+      api.log.error("Can't start because " + name + " is already running  – shut it down first!")
+      process.exitCode = 1
+      return setTimeout(e.end, 200)
+    }
+
+    api.config.plugins = api.config.plugins || []
+
+    if (opts.target) {
+      const main = require(path.join(path.resolve(opts.target), "/package.json")).main
+      api.config.plugins.push(path.join(path.resolve(opts.target), "/" + main))
+    }
+
+    let plugins = ["./plugins/dht/plugin.js"].concat(api.config.plugins || []).map((plug) => {
+      const res = require(plug)
+
+      api.log("Plugin loaded", path.resolve(plug))
+
+      if (!(res && _.isFunction(res.listen) && _.isFunction(res.end)) && _.isPlainObject(res) && Object.keys(res).length > 0) {
+        const sub = []
+        for (let i in res) sub.push(res[i])
+        return sub
       }
 
-      if (target) {
-        var main = require(path.join(path.resolve(target), "/package.json")).main
-        peer.logger.log("Plugin loaded", path.join(path.resolve(target), "/" + main))
-        peer.addProtocol(require(path.join(path.resolve(target), "/" + main)))
-      }
-
-      process.on("SIGINT", peer.stop.bind(peer))
-      process.on("SIGHUP", peer.stop.bind(peer))
-      process.on('SIGUSR2', peer.stop.bind(peer, peer.start.bind(peer)))
-
-      peer.start()
-
-
-    }, ['string?'], ['object?'], ['string', 'object']),
-    init: valid.async(function (cb) {
-    
-      if (!fs.existsSync("./package.json")) {
-        var p = require(path.join(docs, '/template/package.json'))
-        p.dependencies.alligator = require('./package.json').version
-
-        p.name = path.basename(process.cwd())
-        fs.writeFileSync('./package.json', JSON.stringify(p, null, 2))
-        console.log('package.json created.')
-      }
-      else console.warn('package.json already exists.')
-
-      if (!fs.existsSync('./index.md')) {
-
-        fs.writeFileSync('./index.md', fs.readFileSync(path.join(docs, '/template/index.md'), 'utf8'))
-        console.log('index.md created.')
-      }
-      else console.warn('index.js already exists.')
-
-      if (!fs.existsSync('./index.js')) {
-
-        fs.writeFileSync('./index.js', fs.readFileSync(path.join(docs, '/template/index.js'), 'utf8'))
-        console.log('index.js created.')
-      }
-      else console.warn('index.js already exists.')
-
-
-      cb()
-    }),
-    stop: valid.async(function (cb) {
-      if (err) return cb(err)
-      e.peer.cli.stop(function () {
-        cb(null, "Alligator is stopped")
-      })
-
+      return [res]
     })
-  }
 
-  var manifest = Manifest.manifest()
-  if (e) {
-    if (e && e.manifest) manifest = merge(manifest, e.manifest)
-    var paths = Object.keys(flatten(e.manifest, { safe: true }))
-    var filtered = unflatten(pick(flatten(e.peer, { safe: true }), paths), { safe: true })
-    api = merge(api, filtered)
-  }
+    const f = []
+    plugins.forEach((item) => {
+      for (let plug of item) f.push(plug)
+    })
 
-  return muxrpcli(process.argv.slice(2), manifest, api)
+    plugins = f
+    plugins = plugins.filter((item) => item && _.isFunction(item.listen) && _.isFunction(item.end)).map((item) => {
+      const listen = item.listen()
+      listen.end = item.end
+      return listen
+    })
+
+    delete api.actions.start
+    delete api.actions.init
+
+    const peer = api.peer = Peer(api.actions, Object.assign({
+      wrap: (d) => {
+        return Timeout(d, api.config.connectionTimeout = api.config.connectionTimeout || api.config.timeout || ms('40s'), () => {
+          d.end()
+        })
+      }
+    }, api.config, { listeners: plugins }))
+
+    const end = peer.end
+    peer.end = (...args) => {
+      api.shutdown = true
+      end(...args)
+    }
+
+    api.actions.stop = Action({
+      type: "async",
+      desc: "Stops the Server",
+      run: (cb) => {
+        if (peer) peer.end()
+        cb(null)
+      }
+    })
+
+    api.config.listen.push("shs+tcp+unix://" + path.join("/", os.tmpdir(), name + ".sock"))
+    
+    api.config.listen
+    .filter((addr) => peer.protoNames().indexOf(url.parse(addr).protocol) !== -1)
+    .forEach((addr) => peer.listen(addr, { timeout: ms('40s') }))
+
+    process.on("SIGHUP", () => { peer.end() })
+    process.on("SIGINT", () => { peer.end() })
+
+    api.shutdown = false
+
+    api.peer.events = events.listen
+    
+    _(peer, _.drain(events.emit, events.end))
+
+    _(
+      peer.events(),
+      peer.on({
+        ready: (e) => {
+          if (e.address && e.address.length > 0)
+            api.log("Server listening on address: ", e.address.join(", "))
+        },
+        connection: (e) => {
+          if (api.shutdown === true)  e.end("'peer cannot accept new connections, because it is shutting down'");
+
+          api.log('Connection from', e.peerID, 'protocol', e.protocol, 'on', api.id)
+        },
+        connectionError: (e) => api.log('Connection error',
+          e.error ? (e.error.message || e.error) : '',
+          e.peerID ? ("from " + e.peerID) : '',
+          e.protocol ? 'protocol ' + e.protocol : '',
+          'on', api.id
+        ),
+        disconnection: (e) =>
+          api.log('Disconnection',
+            e.error ? (e.error.message || e.error) : '',
+            e.peerID ? ("from " + e.peerID) : '',
+            e.protocol ? 'protocol ' + e.protocol : '',
+            'on', api.id
+          ),
+        end: (err) => err ? api.log.error("server error", err) : api.log("Server closed")
+      })
+    )
+
+    cb(null)
+  }
 
 })
+
+if (!api.config.test)
+  connect((err, _e) => {
+    e = _e
+    if (e && e.peer.protoNames) {
+      let timer = setInterval(() => {
+        e.peer.protoNames(() => { })
+      }, 2000)
+
+      const end = e.end
+      e.end = () => {
+        clearInterval(timer)
+        end()
+      }
+
+      process.on("SIGINT", () => { e.end() })
+      process.on("SIGHUP", () => { e.end() })
+    }
+
+    api.actions.init = Action({
+      type: "async",
+      desc: "Create an project",
+      run: (cb) => {
+        if (!fs.existsSync("./package.json")) {
+          let p = require(path.join(dir, '/template/package.json'))
+          p.peerDependencies.alligator = "0.x"
+
+          p.name = path.basename(process.cwd())
+          fs.writeFileSync('./package.json', JSON.stringify(p, null, 2))
+          api.log('package.json created.')
+        }
+        else api.log.warn('package.json already exists.')
+
+        if (!fs.existsSync('./index.js')) {
+
+          fs.writeFileSync('./index.js', fs.readFileSync(path.join(dir, '/template/index.js'), 'utf8'))
+          api.log('index.js created.')
+        }
+        else api.log.warn('index.js already exists.')
+        cb(null)
+      }
+    })
+
+    if (e) Object.assign(api.actions, e.peer)
+
+    if (!api.config.test)
+      return CLI(api, (err) => {
+        if (e) setTimeout(e.end, 100)
+      });
+
+  })
