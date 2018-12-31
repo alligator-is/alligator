@@ -2,19 +2,18 @@ const fs = require("nodejs-fs-utils");
 const os = require('os')
 const test = require("tape")
 const ms = require('ms')
-
-try {
-  fs.rmdirsSync(".test")
-
-}
-catch (err) { }
-
 const cluster = require('cluster');
 
 let start = 8
 let count = start
 
 if (cluster.isMaster) {
+  
+  try {
+    fs.rmdirsSync(".test")
+  
+  }
+  catch (err) { }
 
   process.on("SIGINT", () => { })
   process.on("SIGHUP", () => { })
