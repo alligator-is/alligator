@@ -128,13 +128,14 @@ _(
       if (err) return;
       if (e.peer)
         timers.start(e.id, () => {
-          if (api.dht.get(e.peerID) == null) return timers.stop(e.id);
           isCloser(e.peerID, (err, closer) => {
             if (!closer) {
               if (e.isCloser != false) {
                 e.isCloser = false
                 events.emit({ type: 'notcloser', id: e.id, peerID: e.peerID })
               }
+
+              if(api.dht.bucket.count()< api.config.bucketSize && api.dht.get(e.peerID) == null)api.dht.ping(e, (err) => { })
               return
             }
             api.dht.ping(e, (err) => { })
