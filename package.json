@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.1",
-    "encoding-down": "^6.0.0",
+    "encoding-down": "^6.0.1",
     "flat": "^4.1.0",
     "flumecodec": "0.0.1",
     "flumedb": "^1.0.1",
@@ -39,7 +39,7 @@
     "levelup": "^4.0.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
-    "moment": "^2.22.2",
+    "moment": "^2.23.0",
     "mutexify": "^1.2.0",
     "network-address": "^1.1.2",
     "osenv": "^0.1.5",
@@ -53,6 +53,6 @@
   },
   "devDependencies": {
     "nodejs-fs-utils": "^1.1.2",
-    "tape": "^4.9.1"
+    "tape": "^4.9.2"
   }
 }

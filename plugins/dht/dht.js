@@ -183,8 +183,6 @@ api.actions.protoNames = Action({
   }
 })
 
-api.actions.dht = {}
-
 api.dht.get = (key) => {
   const item = bucket.get(util.decode(key, api.config.encoding))
   if (!item) return

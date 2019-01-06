@@ -1,4 +1,4 @@
-const _ = require('icebreaker-rpc')._
+const { _, Local } = require("icebreaker-rpc")
 
 const api = {}
 
@@ -22,5 +22,7 @@ _.events = ()=>{
         end:notify.end
     }
 }
+
+api.actions = Local()
 
 module.exports={Action:require("./lib/action"),api:api,_:_}
