@@ -6,7 +6,7 @@ module.exports = {
     {
       name      : 'alligator',
       script    : './bin.js',
-      args:'start --config.listen "shs+tcp://[::]:81" --config.listen "shs+ws://[::]:80" --config.logLevel 6',
+      args:'start --listen "shs+tcp://[::]:81" --listen "shs+ws://[::1]:80" --logLevel 7',
       env: {
       },
       env_production : {
