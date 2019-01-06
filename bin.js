@@ -25,17 +25,14 @@ if (address.ipv6() === "::1")
 
 require("./lib/logger")
 const connect = Connect.bind(null, "shs+tcp+unix://" + encodeURIComponent(api.id) + "@" + path.join("/", os.tmpdir(), name + ".sock"), null, api.config)
-
 if (!api.config.test)
 return connect((err, e) => {  
-    
   api.actions.start = createStart(e)
-  
   if (e && e.peer.protoNames) {
     let timer = setInterval(() => {
       e.peer.protoNames(() => { })
     }, 2000)
-
+    
     const end = e.end
     e.end = () => {
       clearInterval(timer)
