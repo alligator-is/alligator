@@ -97,7 +97,7 @@ const sync = () => {
     return _.asyncMap((item, cb) => {
         db.view.get((err, friends) => {
             if (err) return cb(null, item)
-            const friend = friends[item.id]
+            const friend = friends?friends[item.id]:undefined
             if ((friend && friend.ts < item.ts) || !friend) return db.append(item, () => cb(null, item));
             return cb(null, item)
         })
