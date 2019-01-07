@@ -5,10 +5,6 @@ const util = require('icebreaker-network/lib/util')
 
 api.config.pingInterval = api.config.pingInterval || ms('15s')
 
-const events = _.events()
-
-const end = events.end
-
 class Intervals {
   constructor() {
     this.timers = {}
@@ -43,7 +39,10 @@ class Intervals {
 }
 
 module.exports = () => {
+  const events = _.events()
 
+  const end = events.end
+  
   const timers = new Intervals()
 
   events.end = (err) => {
