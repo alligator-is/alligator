@@ -111,9 +111,19 @@ module.exports = () => {
       }
     },
     end: (e) => {
-      db.close()
+ 
     }
 
   }))
 
+  const events = _.events()
+  const end = events.end
+  events.end=()=>{
+    db.close(function(){
+      end()
+    })
+  }
+  events.emit({type:"ready"})
+  return events
+  
 }
