@@ -62,6 +62,7 @@ module.exports = () => {
         traverse(e.peer).forEach(function () {
           if (_.isFunction(this.node)) {
             let value ={ key: addr + "/" + this.path.join("/"), ts: ts,action:this.path.join(".") }
+            Object.assign(value,this.node)
             if(map) value =map(value)
             add(value, (err) => {
               if (err) return api.log.error(err)
