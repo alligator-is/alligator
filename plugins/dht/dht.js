@@ -161,7 +161,8 @@ module.exports = () => {
   const timers = new Timers()
 
   let addrs = api.config.listen || []
-
+  
+  if(addrs.length>0)
   api.actions.protoNames = Action({
     type: "async",
     desc: "Returns protocol names and ports listened to by the server",

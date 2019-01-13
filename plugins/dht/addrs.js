@@ -6,6 +6,8 @@ const Abortable = require('pull-abortable')
 const pl = require('pull-level')
 const leveldown = require('leveldown')
 const encode = require('encoding-down')
+const util = require('icebreaker-network/lib/util')
+const Intervals = require("../../lib/intervals")
 
 module.exports = () => {
   const dir = path.join(api.config.path, "addrs")
@@ -13,6 +15,8 @@ module.exports = () => {
   catch (err) { }
 
   const db = require('levelup')(encode(leveldown(dir), { valueEncoding: 'json' }))
+
+  const timers = new Intervals()
 
   const add = (data, cb) => {
     db.get(data.key, (err, d) => {
@@ -51,12 +55,15 @@ module.exports = () => {
     }
   })
 
-  const addAddrs = (e) => {
+  const addAddrs = (e,map) => {
+    const ts = Date.now()
     if (e.addrs && e.peer)
       for (let addr of e.addrs) {
         traverse(e.peer).forEach(function () {
           if (_.isFunction(this.node)) {
-            add({ key: addr + "/" + this.path.join("/"), ts: Date.now() }, (err) => {
+            let value ={ key: addr + "/" + this.path.join("/"), ts: ts,action:this.path.join(".") }
+            if(map) value =map(value)
+            add(value, (err) => {
               if (err) return api.log.error(err)
             })
           }
@@ -64,7 +71,30 @@ module.exports = () => {
       }
   }
 
+  const addClient = (e) => {          
+    _(pl.read(db,{old:true,sync:false,live:false,keys:false}),
+    _.filter(function(item){
+      return item.key.indexOf("://"+api.id+"@")!=-1  && item.key.endsWith(api.config.appKey+"/protoNames") && !item.gw
+    }),
+    _.collect((err,addrs)=>{
+      let maxts 
+      addrs.forEach((item)=>{ maxts = Math.max(maxts||0,item.ts) })
+      addrs=addrs.filter((addr)=>{ return addr.ts === maxts })
+      addrs = addrs.map((addr)=>{ return addr.key.replace("/protoNames","") })
+      addAddrs({addrs:[e.remoteAddress],peer:e.peer},(data)=>{
+        data.gw = addrs
+        return data
+      })
+    }))
+  }
+
   _(api.events(), api.events.on({
+    connection:(e)=>{
+      if(!e.peer.protoNames && e.remoteAddress!=null && e.peer){
+          timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
+          addClient(e)
+      }
+    },
     closer: (e) => {
       try {
         addAddrs(e)
@@ -110,6 +140,9 @@ module.exports = () => {
         api.log.error("Addresses replication error", err.message || err)
       }
     },
+    disconnection:(e)=>{
+      timers.stop(e.id)
+    },
     end: (e) => {
  
     }
@@ -119,6 +152,7 @@ module.exports = () => {
   const events = _.events()
   const end = events.end
   events.end=()=>{
+    timers.stopAll()
     db.close(function(){
       end()
     })

@@ -4,39 +4,7 @@ const ms = require('ms')
 const util = require('icebreaker-network/lib/util')
 
 api.config.pingInterval = api.config.pingInterval || ms('15s')
-
-class Intervals {
-  constructor() {
-    this.timers = {}
-    this.closing = false
-  }
-
-  start(id, func, time) {
-    if (this.closing) return
-    if (this.timers[id]) this.stop(id)
-    const self = this
-    this.timers[id] = setInterval(() => {
-      if (self.closing == true) return self.stop(id)
-      func()
-    }, time)
-  }
-  stop(id) {
-    if (this.timers[id]) {
-      clearInterval(this.timers[id])
-      delete this.timers[id]
-    }
-  }
-
-  stopAll() {
-    this.closing = true
-    for (var t in Object.keys(this.timers)) {
-      if (this.timers[t]) {
-        clearInterval(this.timers[t])
-        delete this.timers[t]
-      }
-    }
-  }
-}
+const Intervals = require("../../lib/intervals")
 
 module.exports = () => {
   const events = _.events()
@@ -65,25 +33,20 @@ module.exports = () => {
     api.log.debug('ping peer', e.peerID, "on", api.id)
 
     if (!e.peer.protoNames) return cb(new Error("peer.protoNames not found"))
-
     e.peer.protoNames((err, protos) => {
       api.log.debug('pinged peer ', e.peerID, "on", api.id)
 
       if (err || !Array.isArray(protos)) return cb(err || new Error("result of protoNames is not a array"))
 
       if (protos.length == 0) return cb(new Error("peer " + e.peerID + "listening on no protocols"))
-
       if ((e.address != null || e.remoteAddress != null)) {
         let address = e.address || e.remoteAddress
         const u = util.parseUrl(address)
-        u.auth = e.peerID
         delete u.host
-        address = u.format()
 
         const addr = protos.map((proto) => {
           return address.replace(e.protocol, proto.name).replace(u.port, proto.port)
         })
-
         return _(
           addr,
           _.unique(),
