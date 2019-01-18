@@ -51,7 +51,11 @@ module.exports = () => {
       opts.live = opts.live === "true" || opts.live === true ? true : false
       opts.keys = false
       opts.sync = false
-      return pl.read(db, opts)
+      const ts = Date.now()-api.config.connectionTimeout
+      return _(pl.read(db, opts),_.filter(item=>{ 
+        if(item.ts<ts)db.del(item.key)
+        return item.ts>ts
+      }))
     }
   })
 
