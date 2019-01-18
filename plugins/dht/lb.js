@@ -284,9 +284,6 @@ module.exports = () => {
       })
     }, () => { 
 
-      spec = {}
-      lb = {}
-      robin = {}
 
     }))
 
