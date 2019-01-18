@@ -6,7 +6,6 @@ const Abortable = require('pull-abortable')
 const pl = require('pull-level')
 const leveldown = require('leveldown')
 const encode = require('encoding-down')
-const util = require('icebreaker-network/lib/util')
 const Intervals = require("../../lib/intervals")
 
 module.exports = () => {
