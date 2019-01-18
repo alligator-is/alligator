@@ -52,9 +52,11 @@ module.exports = () => {
       opts.keys = false
       opts.sync = false
       const ts = Date.now()-api.config.connectionTimeout
-      return _(pl.read(db, opts),_.filter(item=>{ 
-        if(item.ts<ts)db.del(item.key)
-        return item.ts>ts
+      return _(pl.read(db, opts),_.filter((item)=>{ 
+        if(item && item.ts<ts)setImmediate(()=>{
+          db.del(item.key)
+        })
+        return item  && item.ts>ts
       }))
     }
   })
