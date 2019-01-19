@@ -41,6 +41,7 @@
     "mkdirp": "^0.5.1",
     "moment": "^2.23.0",
     "mutexify": "^1.2.0",
+    "muxrpc": "^6.4.2",
     "network-address": "^1.1.2",
     "osenv": "^0.1.5",
     "pull-abortable": "^4.1.1",
