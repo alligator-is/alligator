@@ -168,7 +168,11 @@ module.exports = () => {
       end()
     })
   }
-  events.emit({type:"ready"})
+  
+  db.once("ready",function(){
+    events.emit({type:"ready"})
+  })
+
   return events
   
 }
