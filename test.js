@@ -143,7 +143,8 @@ else {
         listen()
         setTimeout(() => {
           e.end()
-          api.actions.start(opts2, function () {
+          api.actions.start(opts2, function (err) {
+            if(err)console.log(err)
             process.on("SIGINT", api.actions.stop)
             process.on("SIGHUP", api.actions.stop)
           })
