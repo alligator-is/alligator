@@ -19,10 +19,12 @@ module.exports = () => {
 
   const add = (data, cb) => {
     db.get(data.key, (err, d) => {
+      if(!data.ts) data.ts  = Date.now()
+      
       if (err){
-        if(!data.ts) data.ts  = Date.now()
         return db.put(data.key, data, cb)
       } 
+      if(!d.ts) d.ts  = 0
       if (d.ts < data.ts) return db.put(data.key, data, cb)
       cb(null, d)
     })
