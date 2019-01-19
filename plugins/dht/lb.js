@@ -15,25 +15,7 @@ module.exports = () => {
   let robin = {}
 
   api.actions.call = {
-    async: Action({
-      type: "async",
-      input: ["string", "string", "array"],
-      desc: "This run a async or sync action on peerID",
-      run: (peerID, path, args, cb) => {
-        for (let k in api.connections) {
-          let c = api.connections[k]
-          if (c.peerID === peerID && c.peer) {
-            const f = flat.flatten(c.peer)
-            if (!f[path]) return cb(new Error("Action " + path + " not found on " + peerID))
-            if (f[path].type !== "sync" && f[path].type !== "async") return cb(new Error("Action " + path + " type is not sync or async on " + peerID))
-            return f[path](...args)
-          }
-        }
-
-        return cb(new Error("No Peer with id" + peerID + " found on " + api.id))
-      }
-    }),
-
+   
     promise: Action({
       type: "promise",
       input: ["string", "string", "array"],
@@ -123,6 +105,26 @@ module.exports = () => {
     })
 
   }
+
+  api.actions.call.async= api.actions.call.sync = Action({
+    type: "async",
+    input: ["string", "string", "array"],
+    desc: "This run a async or sync action on peerID",
+    run: (peerID, path, args, cb) => {
+      for (let k in api.connections) {
+        let c = api.connections[k]
+        if (c.peerID === peerID && c.peer) {
+          const f = flat.flatten(c.peer)
+          if (!f[path]) return cb(new Error("Action " + path + " not found on " + peerID))
+          if (f[path].type !== "sync" && f[path].type !== "async") return cb(new Error("Action " + path + " type is not sync or async on " + peerID))
+          return f[path](...args)
+        }
+      }
+
+      return cb(new Error("No Peer with id" + peerID + " found on " + api.id))
+    }
+  })
+
 
   function error(type, error, cb, defer) {
     if (type === "promise") {
@@ -216,7 +218,7 @@ module.exports = () => {
   }
 
   _(
-    api.addrs(),
+    api.addrs({live:true,old:true}),
     _.drain((data) => {
       const url = utils.parseUrl(data.key)
 
