@@ -50,8 +50,8 @@ module.exports = () => {
       opts.live = opts.live === "true" || opts.live === true ? true : false
       opts.keys = false
       opts.sync = false
-      const ts = Date.now()-api.config.connectionTimeout
       return _(pl.read(db, opts),_.filter((item)=>{ 
+        const ts = Date.now()-api.config.connectionTimeout
         if(item && item.ts<ts)setImmediate(()=>{
           db.del(item.key)
         })
