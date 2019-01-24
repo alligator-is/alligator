@@ -8,7 +8,7 @@ module.exports = {
       script    : './bin.js',
       wait_ready:true,
       kill_timeout: 60000,
-      args:'start --listen "shs+tcp://[::]:81" --listen "shs+ws://[::1]:80"',
+      args:'start --listen "shs+tcp://[::]:81" --listen "shs+ws://[::]:80"',
       env: {
       },
       env_production : {
