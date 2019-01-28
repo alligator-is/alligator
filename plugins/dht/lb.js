@@ -161,13 +161,13 @@ module.exports = () => {
 
       robin[path] = keys._rr
 
-      const connect = (cb, resolve, reject) => {
+      const connect = (_cb, resolve, reject) => {
         let defer
         if (type == "source" || type == "sink" || type == "duplex") defer = Defer[type]()
         if (type == "promise") defer = { reject: reject, resolve: resolve }
         api.connect(address, (err, e) => {
           if (err) return error(type, err, cb, defer)
-          cb(e, cb, defer)
+          _cb(e, cb, defer)
         })
       }
 
