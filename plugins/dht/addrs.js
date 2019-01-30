@@ -61,14 +61,12 @@ module.exports = () => {
         if(item.type!=="put")return false
         if(!item.value)return false
         if(!item.value.ts)return false
-      
-        item = item &&item.value?item.value:item
         const ts = Date.now()-api.config.connectionTimeout
-        if(item.ts<ts)setImmediate(()=>{
+        if(item.value.ts<ts)setImmediate(()=>{
           db.del(item.key)
         })
-        return item.ts>ts
-      }),_.map((item)=>{return item.value })
+        return item.value.ts>ts
+      }),_.map((item)=>{ return  item.value })
       )
     }
   })
@@ -80,7 +78,7 @@ module.exports = () => {
       traverse(e.peer).forEach(function () {
         if (_.isFunction(this.node)) {
           let value ={ key: addr + "/" + this.path.join("/"), ts: ts,action:this.path.join(".") }
-          Object.assign(value,this.node)
+          value=Object.assign(value,this.node)
           if(map) value =map(value)
             add(value, (err) => {
               if (err) return api.log.error(err)
