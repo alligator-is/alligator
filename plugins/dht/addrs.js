@@ -37,7 +37,7 @@ module.exports = () => {
       add(item, (err) => { cb(err, item) })
     })
   }
-
+  
   api.addrs = api.actions.addrs = Action({
     type: "source",
     input: { live: "boolean|string", old: "boolean|string" },
@@ -53,27 +53,30 @@ module.exports = () => {
     run: (opts) => {
       opts.old = opts.old === "true" || opts.old === true ? true : false
       opts.live = opts.live === "true" || opts.live === true ? true : false
-      opts.keys = false
+      opts.keys = true
       opts.sync = false
+
       return _(pl.read(db, opts),_.filter((item)=>{ 
+        if( item == null || item.type!=="put")return false
         const ts = Date.now()-api.config.connectionTimeout
         if(item && item.ts<ts)setImmediate(()=>{
           db.del(item.key)
         })
         return item  && item.ts>ts
-      }))
+      }),_.map((item)=>{ return item.value })
+      )
     }
   })
 
   const addAddrs = (e,map) => {
     const ts = Date.now()
     if (e.addrs && e.peer)
-      for (let addr of e.addrs) {
-        traverse(e.peer).forEach(function () {
-          if (_.isFunction(this.node)) {
-            let value ={ key: addr + "/" + this.path.join("/"), ts: ts,action:this.path.join(".") }
-            Object.assign(value,this.node)
-            if(map) value =map(value)
+    for (let addr of e.addrs) {
+      traverse(e.peer).forEach(function () {
+        if (_.isFunction(this.node)) {
+          let value ={ key: addr + "/" + this.path.join("/"), ts: ts,action:this.path.join(".") }
+          Object.assign(value,this.node)
+          if(map) value =map(value)
             add(value, (err) => {
               if (err) return api.log.error(err)
             })
