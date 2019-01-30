@@ -56,16 +56,18 @@ module.exports = () => {
       opts.keys = true
       opts.sync = false
 
-      return _(pl.read(db, opts),_.filter((item)=>{ 
-        if( item && item.type!=="put" && !item.ts)return false
-        if(!item.ts)return false
+      return _(pl.read(db, opts),_.filter((item)=>{
+        if(!item)return false
+        if(item.type!=="put")return false
+        if(!item.value)return false
+        if(!item.value.ts)return false
       
         item = item &&item.value?item.value:item
         const ts = Date.now()-api.config.connectionTimeout
-        if(item && item.ts<ts)setImmediate(()=>{
+        if(item.ts<ts)setImmediate(()=>{
           db.del(item.key)
         })
-        return item  && item.ts && item.ts>ts
+        return item.ts>ts
       }),_.map((item)=>{return item.value })
       )
     }
