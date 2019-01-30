@@ -57,13 +57,14 @@ module.exports = () => {
       opts.sync = false
 
       return _(pl.read(db, opts),_.filter((item)=>{ 
-        if( item == null || item.type!=="put")return false
+        if( item && item.type!=="put")return false
+        item = item &&item.value?item.value:item
         const ts = Date.now()-api.config.connectionTimeout
         if(item && item.ts<ts)setImmediate(()=>{
           db.del(item.key)
         })
         return item  && item.ts>ts
-      }),_.map((item)=>{ return item.value })
+      }),_.map((item)=>{return item.value })
       )
     }
   })
