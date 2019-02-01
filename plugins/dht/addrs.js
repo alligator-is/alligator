@@ -58,7 +58,7 @@ module.exports = () => {
 
       return _(pl.read(db, opts),_.filter((item)=>{
         if(!item)return false
-        if(item.type!=="put")return false
+        if(item.type!=="put" && item.type)return false
         if(!item.value)return false
         if(!item.value.ts)return false
         const ts = Date.now()-api.config.connectionTimeout
@@ -88,8 +88,8 @@ module.exports = () => {
       }
   }
 
-  const addClient = (e) => {          
-    _(pl.read(db,{old:true,sync:false,live:false,keys:false}),
+  const addClient = (e) => {
+    _(api.addrs({old:true,live:false}),
     _.filter(function(item){
       return item.key.indexOf("://"+api.id+"@")!=-1  && item.key.endsWith(api.config.appKey+"/protoNames") && !item.gw
     }),
