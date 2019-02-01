@@ -30,7 +30,7 @@ module.exports = () => {
   const write = () => {
     return _.asyncMap((item, cb) => {
       if(item && item.ts && item.key)
-      add(item, (err) => { cb(err, item) })
+      add(item, (err) => cb(err, item) )
       return  cb(null, item)
     })
   }
@@ -64,8 +64,9 @@ module.exports = () => {
         const ts = Date.now()-api.config.connectionTimeout
         if(item.value.ts<ts)db.del(item.key,function(err){})
         
+        delete item.type
         return item.value.ts>ts
-      }),_.map((item)=>{ return  item.value })
+      }),_.map(item=>item.value)
       )
     }
   })
