@@ -19,14 +19,9 @@ module.exports = () => {
 
   const add = (data, cb) => {
     db.get(data.key, (err, d) => {
-      if(!data.ts) data.ts  = Date.now()
-      
-      if (err){
-        return db.put(data.key, data, cb)
-      } 
-      if(!d.ts) d.ts  = 0
-      if (d.ts < data.ts) return db.put(data.key, data, cb)
-      cb(null, d)
+      if (err)return db.put(data.key, data, cb)
+      if(d.ts && data.ts>d.ts) return db.put(data.key, data, cb)
+      return      cb(null, d)
     })
   }
 
@@ -34,7 +29,9 @@ module.exports = () => {
 
   const write = () => {
     return _.asyncMap((item, cb) => {
+      if(item && item.ts && item.key)
       add(item, (err) => { cb(err, item) })
+      return  cb(null, item)
     })
   }
   
@@ -60,11 +57,13 @@ module.exports = () => {
         if(!item)return false
         if(item.type!=="put" && item.type)return false
         if(!item.value)return false
-        if(!item.value.ts)return false
+        if(!item.value.ts){
+          db.del(item.key,function(err){})
+          return false
+        }
         const ts = Date.now()-api.config.connectionTimeout
-        if(item.value.ts<ts)setImmediate(()=>{
-          db.del(item.key)
-        })
+        if(item.value.ts<ts)db.del(item.key,function(err){})
+        
         return item.value.ts>ts
       }),_.map((item)=>{ return  item.value })
       )
@@ -74,18 +73,18 @@ module.exports = () => {
   const addAddrs = (e,map) => {
     const ts = Date.now()
     if (e.addrs && e.peer)
-    for (let addr of e.addrs) {
+    e.addrs.forEach(addr=> {
       traverse(e.peer).forEach(function () {
         if (_.isFunction(this.node)) {
-          let value ={ key: addr + "/" + this.path.join("/"), ts: ts,action:this.path.join(".") }
-          value=Object.assign(value,this.node)
+          let value = Object.assign({ key: addr + "/" + this.path.join("/"), ts: 0+ts,action:this.path.join(".") },this.node)
           if(map) value =map(value)
+          if(value.ts)
             add(value, (err) => {
               if (err) return api.log.error(err)
             })
           }
         })
-      }
+      })
   }
 
   const addClient = (e) => {
