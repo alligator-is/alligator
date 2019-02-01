@@ -20,7 +20,7 @@ module.exports = () => {
   const add = (data, cb) => {
     db.get(data.key, (err, d) => {
       if (err)return db.put(data.key, data, cb)
-      if(d.ts && data.ts>d.ts) return db.put(data.key, data, cb)
+      if(d.ts && data.ts>d.ts) return db.put(data.key, Object.assign({},data), cb)
       return      cb(null, d)
     })
   }
@@ -63,7 +63,7 @@ module.exports = () => {
         }
         const ts = Date.now()-api.config.connectionTimeout
         if(item.value.ts<ts)db.del(item.key,function(err){})
-        
+       
         delete item.type
         return item.value.ts>ts
       }),_.map(item=>item.value)
