@@ -17,10 +17,11 @@ module.exports = () => {
 
   const timers = new Intervals()
 
-  const add = (data, cb) => {
-    db.get(data.key, (err, d) => {
-      if (err)return db.put(data.key, data, cb)
-      if(d.ts && data.ts>d.ts) return db.put(data.key, Object.assign({},data), cb)
+  const add = function(data, cb) {
+    const r = Object.assign({},data)
+    return db.get(r.key, (err, d) => {
+    if(err)return db.put(r.key, r, (err)=> cb(err,r) )
+      if(d.ts && data.ts>d.ts) return db.put(r.key, r, (err)=>cb(err,r))
       return      cb(null, d)
     })
   }
@@ -52,7 +53,6 @@ module.exports = () => {
       opts.live = opts.live === "true" || opts.live === true ? true : false
       opts.keys = true
       opts.sync = false
-
       return _(pl.read(db, opts),_.filter((item)=>{
         if(!item)return false
         if(item.type!=="put" && item.type)return false
@@ -61,9 +61,9 @@ module.exports = () => {
           db.del(item.key,function(err){})
           return false
         }
-        const ts = Date.now()-api.config.connectionTimeout
-        if(item.value.ts<ts){
-          db.del(item.key,function(err){})
+        const ts = Date.now() - api.config.connectionTimeout
+        if(item.value.ts<ts == true){
+            db.del(item.key,function(err){})
           return false
         }
         delete item.type
