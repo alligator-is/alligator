@@ -62,11 +62,17 @@ module.exports = () => {
           return false
         }
         const ts = Date.now()-api.config.connectionTimeout
-        if(item.value.ts<ts)db.del(item.key,function(err){})
-       
+        if(item.value.ts<ts){
+          db.del(item.key,function(err){})
+          return false
+        }
         delete item.type
         return item.value.ts>ts
-      }),_.map(item=>item.value)
+      }),_.map((item)=>
+      {
+        item.value.key = item.key
+        return item.value 
+      })
       )
     }
   })
@@ -77,7 +83,7 @@ module.exports = () => {
     e.addrs.forEach(addr=> {
       traverse(e.peer).forEach(function () {
         if (_.isFunction(this.node)) {
-          let value = Object.assign({ key: addr + "/" + this.path.join("/"), ts: 0+ts,action:this.path.join(".") },this.node)
+          let value = Object.assign({ key: addr + "/" + this.path.join("/"), ts: ts,action:this.path.join(".") },this.node)
           if(map) value =map(value)
           if(value.ts)
             add(value, (err) => {
@@ -138,6 +144,7 @@ module.exports = () => {
 
     },
     notcloser: (e) => {
+       
       addAddrs(e)
       timers.stop(e.id)
       if (ls[e.id]) {
