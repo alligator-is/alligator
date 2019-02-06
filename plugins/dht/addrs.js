@@ -18,6 +18,7 @@ module.exports = () => {
   const timers = new Intervals()
 
   const add = function(data, cb) {
+
     const r = Object.assign({},data)
     return db.get(r.key, (err, d) => {
     if(err)return db.put(r.key, r, (err)=> cb(err,r) )
@@ -28,7 +29,7 @@ module.exports = () => {
 
   const ls = {}
 
-  const write = () => {
+  const write =  () => {
     return _.asyncMap((item, cb) => {
       if(item && item.ts && item.key)
       add(item, (err) => cb(err, item) )
@@ -68,11 +69,7 @@ module.exports = () => {
         }
         delete item.type
         return item.value.ts>ts
-      }),_.map((item)=>
-      {
-        item.value.key = item.key
-        return item.value 
-      })
+      }),_.map((item)=>Object.assign({},item.value))
       )
     }
   })
