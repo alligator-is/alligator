@@ -1,22 +1,12 @@
-sudo: true
-language: cpp
+sudo: false
+language: node_js
+node_js:
+  - 10
+  - 11
+cache: npm
 os:
+  - windows
   - linux
   - osx
-env:
-  matrix:
-    - TRAVIS_NODE_VERSION="8"
-    - TRAVIS_NODE_VERSION="9"
-    - TRAVIS_NODE_VERSION="10"
-
-before_install:
-  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
-  - npm install -g node-gyp
-install:
-  - npm install
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo sh -c 'echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6'; fi
-
-script:
-  - npm test
-
