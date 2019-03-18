@@ -55,7 +55,7 @@ module.exports = () => {
         if (err) return cb(err)
         db.view.get(function (err, res) {
           if (err) return cb(err)
-          cb(null, res[key] ? true : false)
+          cb(null, res[key] && res[key].delete ? true : false)
         })
       })
     }
