@@ -95,6 +95,8 @@ module.exports = () => {
     if (closest.length === 0 && api.config.bootstrap.length > 0) {
       api.log.debug('starting bootstraping on', api.id)
 
+      api.config.bootstrap.forEach((addr)=>{ api.friends.put(url.parse(addr).auth) })
+
       api.connect(api.config.bootstrap, (err, conn) => {
         if (err) {
           api.log.warn('unable to connect to bootstrap peer', err)
