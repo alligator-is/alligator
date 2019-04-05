@@ -87,8 +87,8 @@ module.exports = () => {
     }
       return api.identities.get(id, (err, identity) => {
         if (err) return cb(err, false);  
-        if (!(identity.groups && Array.isArray(identity.groups) && identity.groups.length > 0)) return cb("access denied for " + id);
-        return cb(null, true);
+        if(identity.groups && Array.isArray(identity.groups)  &&  identity.groups.length > 0) return cb(null,true)
+        return cb("access denied for " + id);
       })
     
   }
