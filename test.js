@@ -4,7 +4,7 @@ const test = require("tape")
 const ms = require('ms')
 const cluster = require('cluster');
 
-let start = 8
+let start = 4
 let count = start
 
 if (cluster.isMaster) {
