@@ -136,10 +136,10 @@ module.exports = () => {
    
       db.view.get((err, identities) => {
         if (err) return cb(null, item)
-        const identity = identities ? identities[identities.id] : undefined
+        const identity = identities ? identities[item.id] : undefined
         if (db.closed) return cb(Error('cannot: sync groups, flumedb instance is closed'))
-   
-        if ((identity && identity.ts < item.ts) || !identity) return db.append(item, () => cb(null, item));
+        if ((identity && identity.ts < item.ts) || !identity)return db.append(item, () => cb(null, item));
+        
         return cb(null, item)
       })
     })

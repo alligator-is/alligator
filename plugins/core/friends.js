@@ -80,14 +80,14 @@ module.exports = () => {
     if(!id)return cb("access denied for " + id);
 
    if (this.protocol && this.protocol.indexOf("+unix") !== -1){
-      return api.friends.isFriend(id,function(err,found){
+      return api.friends.isFriend(id,(err,found)=>{
           if(!found)return api.friends.put(id, (err) => cb(null, true)) 
           return cb(null,true)
-        })
+      })
     }
       return api.identities.get(id, (err, identity) => {
         if (err) return cb(err, false);  
-        if (!(identity.groups && Array.isArray(identity.groups) && identity.groups.length > 0)) return cb("access denied for " + id, false);
+        if (!(identity.groups && Array.isArray(identity.groups) && identity.groups.length > 0)) return cb("access denied for " + id);
         return cb(null, true);
       })
     
