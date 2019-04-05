@@ -229,7 +229,7 @@ module.exports = () => {
       const apiId = api.config.keys.publicKey
 
       if (data.gw != null) {
-        const gw = data.gw.sort(function (a, b) {
+        data.gw.sort(function (a, b) {
           const aId = utils.parseUrl(a).auth
           const bId = utils.parseUrl(b).auth
           distance(utils.decode(aId, api.config.encoding), apiId) - distance(utils.decode(bId, api.config.encoding), apiId)
@@ -251,7 +251,6 @@ module.exports = () => {
       const sorted = {}
       for (let k of keys) sorted[k] = spec[data.action][k]
       spec[data.action] = sorted
-
 
       const action = {}
       delete data.ts
