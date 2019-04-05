@@ -1,6 +1,6 @@
 const { api, _, Action } = require("../../")
 const util = require('icebreaker-network/lib/util')
-const { Permissions } = require("icebreaker-rpc")
+
 module.exports = () => {
 
   const groupId = "cjtvt7ch50000e8uj3gsn0fjv"
@@ -75,17 +75,24 @@ module.exports = () => {
       ))
     }
   })
-
-  api.config.authenticate = function (id, cb) {
-    if (this.protocol && this.protocol.indexOf("+unix") !== -1) return api.friends.put(id, (err) => cb(null, true))
-
-    return api.identities.get(id, (err, identity) => {
-      if (err) return cb(err, false);
-      if (!(identity.groups && Array.isArray(identity.groups) && identity.groups.length > 0)) return cb("access denied for " + id, false);
-      return cb(null, true);
-    })
-  }
  
+  api.config.authenticate = function (id, cb) {
+    if(!id)return cb("access denied for " + id);
+
+   if (this.protocol && this.protocol.indexOf("+unix") !== -1){
+      return api.friends.isFriend(id,function(err,found){
+          if(!found)return api.friends.put(id, (err) => cb(null, true)) 
+          return cb(null,true)
+        })
+    }
+      return api.identities.get(id, (err, identity) => {
+        if (err) return cb(err, false);  
+        if (!(identity.groups && Array.isArray(identity.groups) && identity.groups.length > 0)) return cb("access denied for " + id, false);
+        return cb(null, true);
+      })
+    
+  }
+
   api.config.perms = function (id, cb) {
     api.identities.get(id, (err, identity) => {
       if (err) return cb(err);
@@ -101,4 +108,5 @@ module.exports = () => {
       }))
     })
   }
+  
 }

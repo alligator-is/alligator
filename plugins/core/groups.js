@@ -27,7 +27,7 @@ module.exports = () => {
     input: {id:"string?",name:"string",allow:"array|string?"},
     desc: "adds or updates the group" ,
     run: (group, cb) => {
-      if (db.closed) return cb(Error('cannot call: api.groups.add, flumedb instance is closed'))
+      if (db.closed) return cb(Error('cannot call: api.groups.put, flumedb instance is closed'))
       db.view.get((err, groups) => {
         if (err) return cb(err)
         if(!group.id)group.id = cuid() 
@@ -41,15 +41,13 @@ module.exports = () => {
             Object.assign(obj,groups[group.id])
             delete obj.ts
             delete group.ts
-            if(JSON.stringify(obj)  === JSON.stringify(group)){
-              return cb(null, groups[group.id])
-            }
+            if(JSON.stringify(obj)  === JSON.stringify(group)) return cb(null, groups[group.id])
           }
         }
         group.ts = Date.now()
         
         db.append(group, (err, sec) => {
-          if (db.closed) return cb(Error('cannot call: api.groups.add, flumedb instance is closed'))
+          if (db.closed) return cb(Error("cannot call: api.groups.put, flumedb instance is closed"))
           if (err) return cb(err)
           db.view.get((err, res) => {
             if (err) return cb(err)
@@ -65,6 +63,7 @@ module.exports = () => {
     input: "string",
     desc: "remove the group by id" ,
     run: (id, cb) => {
+      if (db.closed) return cb(Error("cannot call: api.groups.remove, flumedb instance is closed"))
         db.view.get(function(err,groups){
           if(err) cb(err) 
         if(!groups[id]) return cb(null,true)
@@ -86,6 +85,8 @@ module.exports = () => {
     input: "string",
     desc: "gets the group by id" ,
     run: (id, cb) => {
+      if (db.closed) return cb(Error("cannot call: api.groups.get, flumedb instance is closed"))
+         
       db.view.get(function(err,groups){
         if(err) return cb(err)
         if(!groups[id]) return cb(new Error("Identity " + id +" not found!"))
@@ -120,12 +121,21 @@ module.exports = () => {
   const ls = {}
   const sync = () => {
     return _.asyncMap((item, cb) => {
-      db.view.get((err, groups) => {
-        if (err) return cb(null, item)
-        const group = groups ? groups[groups.id] : undefined
-        if ((group && group.ts < item.ts) || !group) return db.append(item, () => cb(null, item));
-        return cb(null, item)
-      })
+      try{
+        if (db.closed) return cb(Error('cannot: sync groups, flumedb instance is closed'))
+   
+        db.view.get((err, groups) => {
+          if (err) return cb(null, item)
+          const group = groups ? groups[groups.id] : undefined
+          if (db.closed) return cb(Error('cannot: sync groups, flumedb instance is closed'))
+          if ((group && group.ts < item.ts) || !group) return db.append(item, () => cb(null, item));
+          return cb(null, item)
+        })
+      }
+      catch(err){
+        if(err) api.log.error(err)
+        return cb(null,item)
+      }
     })
   }
 

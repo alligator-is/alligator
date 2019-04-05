@@ -75,6 +75,8 @@ module.exports = () => {
       } catch (err) { 
         return cb(err) 
       }
+      if (db.closed) return cb(Error('cannot call: api.identities.remove, flumedb instance is closed'))
+    
         db.view.get(function(err,identities){
           if(err) cb(err) 
         if(!identities[id]) return cb(null,true)  
@@ -95,11 +97,13 @@ module.exports = () => {
     input: "string",
     desc: "gets the identity by id" ,
     run:function(id,cb){
-    db.view.get(function(err,identities){
-      if(err) return cb(err)
-      if(!identities[id]) return cb(new Error("Identity " + id +" not found!"))
-      cb(null,identities[id])
-    })
+      if (db.closed) return cb(Error('cannot call: api.identities.get, flumedb instance is closed'))
+     
+      db.view.get((err,identities)=>{
+        if(err) return cb(err)
+        if(!(identities && identities[id])) return cb(new Error("Identity " + id +" not found!"))
+        cb(null,identities[id])
+      })
   }
 })
 
@@ -128,9 +132,13 @@ module.exports = () => {
   const ls = {}
   const sync = () => {
     return _.asyncMap((item, cb) => {
+      if (db.closed) return cb(Error('cannot call: api.identities.remove, flumedb instance is closed'))
+   
       db.view.get((err, identities) => {
         if (err) return cb(null, item)
         const identity = identities ? identities[identities.id] : undefined
+        if (db.closed) return cb(Error('cannot: sync groups, flumedb instance is closed'))
+   
         if ((identity && identity.ts < item.ts) || !identity) return db.append(item, () => cb(null, item));
         return cb(null, item)
       })
