@@ -40,6 +40,7 @@ module.exports = () => {
             const obj = {}
             Object.assign(obj,groups[group.id])
             delete obj.ts
+            delete group.ts
             if(JSON.stringify(obj)  === JSON.stringify(group)){
               return cb(null, groups[group.id])
             }
