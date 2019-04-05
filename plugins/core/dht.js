@@ -92,10 +92,9 @@ module.exports = () => {
 
   function bootstrap(cb) {
     const closest = api.dht.findNode(api.id)
+
     if (closest.length === 0 && api.config.bootstrap.length > 0) {
       api.log.debug('starting bootstraping on', api.id)
-
-      api.config.bootstrap.forEach((addr)=>{ api.friends.put(url.parse(addr).auth) })
 
       api.connect(api.config.bootstrap, (err, conn) => {
         if (err) {
