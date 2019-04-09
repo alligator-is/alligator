@@ -17,8 +17,7 @@ module.exports = () => {
 
   const timers = new Intervals()
 
-  const add = function(data, cb) {
-
+  const add = (data, cb) =>{
     const r = Object.assign({},data)
     return db.get(r.key, (err, d) => {
     if(err)return db.put(r.key, r, (err)=> cb(err,r) )
@@ -93,9 +92,7 @@ module.exports = () => {
 
   const addClient = (e) => {
     _(api.addrs({old:true,live:false}),
-    _.filter(function(item){
-      return item.key.indexOf("://"+api.id+"@")!=-1  && item.key.endsWith(api.config.appKey+"/protoNames") && !item.gw
-    }),
+    _.filter((item)=> item.key.indexOf("://"+api.id+"@")!=-1  && item.key.endsWith(api.config.appKey+"/protoNames") && !item.gw),
     _.collect((err,addrs)=>{
       let maxts 
       addrs.forEach((item)=>{ maxts = Math.max(maxts||0,item.ts) })
