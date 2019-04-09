@@ -11,7 +11,11 @@ const unset = require('unset-value');
 module.exports = () => {
 
   let spec = {}
-  let lb = {}
+
+  api.actions.lb = {}
+  api.lb = api.actions.lb
+  let lb = api.lb
+
   let robin = {}
 
   api.actions.call = {
@@ -227,7 +231,7 @@ module.exports = () => {
 
       let address = data.key.replace("/" + data.action.replace(".", "/"), "").replace("/" + api.config.appKey, "")
       const apiId = api.config.keys.publicKey
-
+      
       if (data.gw != null) {
         data.gw.sort(function (a, b) {
           const aId = utils.parseUrl(a).auth
@@ -284,9 +288,7 @@ module.exports = () => {
         }
       })
     }, () => { 
-
-
+      
     }))
 
-  api.lb = api.actions.lb = lb
 }
