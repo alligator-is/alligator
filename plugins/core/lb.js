@@ -228,9 +228,10 @@ module.exports = () => {
 
       if (!spec[data.action]) spec[data.action] = {}
       if (!spec[data.action][url.auth]) spec[data.action][url.auth] = {}
-     
-      let address = data.key.replace("/" + data.action.replace(".", "/"), "").replace("/" + api.config.appKey, "")
-      const apiId = api.config.keys.publicKey
+      const u = utils.parseUrl(data.key)
+       u.pathname = null
+       const address = u.format()     
+       const apiId = api.config.keys.publicKey
       
       if (data.gw != null) {
         data.gw.sort(function (a, b) {
@@ -248,7 +249,7 @@ module.exports = () => {
       else if (spec[data.action][url.auth][address] == null || spec[data.action][url.auth][address] < data.ts)
         spec[data.action][url.auth][address] = data.ts
 
-        
+
       let keys = Object.keys(spec[data.action])
       .sort((a, b) => distance(utils.decode(a, api.config.encoding), apiId) - distance(utils.decode(b, api.config.encoding), apiId))
 
