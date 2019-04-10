@@ -118,17 +118,18 @@ module.exports = () => {
 
   _(api.events(), api.events.on({
     connection:(e)=>{
+      if(e.remoteAddress)
       api.friends.isFriend(e.peerID,(err,isFriend)=>{
-        if(!isFriend && e.remoteAddress!=null && e.peer){
+        if(!isFriend &&  e.peer && e.peerID !== api.id){
           timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
-          addClient(e)
+         addClient(e)
         }
       })
       
     },
     closer: (e) => {
       try {
-        if(!e.remoteAddress){
+        if(e.address){
           addAddrs(e)
           timers.start(e.id,()=>addAddrs(e),api.config.pingInterval)
         }

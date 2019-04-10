@@ -61,12 +61,12 @@ module.exports = () => {
 
               if (closer && e.isCloser != true) {
                 e.isCloser = true
-                events.emit({ type: 'closer', id: e.id, peerID: e.peerID, addrs: addrs, peer: e.peer, lastSeen: lastSeen })
+                events.emit({ type: 'closer', id: e.id, peerID: e.peerID, addrs: addrs,address:e.address, peer: e.peer, lastSeen: lastSeen })
               }
 
               if (!closer && e.isCloser != false) {
                 e.isCloser = false
-                events.emit({ type: 'notcloser', id: e.id, peerID: e.peerID, addrs: addrs, peer: e.peer, lastSeen: lastSeen })
+                events.emit({ type: 'notcloser', id: e.id, peerID: e.peerID, addrs: addrs, address:e.address,peer: e.peer, lastSeen: lastSeen })
               }
 
               return cb()
@@ -96,7 +96,7 @@ module.exports = () => {
                 if (!closer) {
                   if (e.isCloser != false) {
                     e.isCloser = false
-                    events.emit({ type: 'notcloser', id: e.id, peerID: e.peerID })
+                    events.emit({ type: 'notcloser',address:e.address, id: e.id, peerID: e.peerID })
                   }
 
                   if (api.dht.bucket.count() < api.config.bucketSize && api.dht.get(e.peerID) == null) api.dht.ping(e, (err) => { })
@@ -124,7 +124,7 @@ module.exports = () => {
         isCloser(e.peerID, (err, closer) => {
           if (!closer && e.isCloser != false) {
             e.isCloser = false
-            events.emit({ type: 'notcloser', id: e.id, peerID: e.peerID })
+            events.emit({ type: 'notcloser', id: e.id, address:e.address,peerID: e.peerID })
           }
         })
 
