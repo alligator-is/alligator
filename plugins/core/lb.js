@@ -164,9 +164,6 @@ module.exports = () => {
       robin[path] = keys._rr++
       const address = Object.keys(spec[path][key])
       if (address.length === 0) return error(type, new Error("No address found for action " + path), cb)
-      console.log(address)
-
-      console.log("call" ,keys, key )
       const connect = (_cb, resolve, reject) => {
         let defer
         if (type == "source" || type == "sink" || type == "duplex") defer = Defer[type]()
