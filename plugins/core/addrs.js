@@ -7,6 +7,9 @@ const pl = require('pull-level')
 const leveldown = require('leveldown')
 const encode = require('encoding-down')
 const Intervals = require("../../lib/intervals")
+const util = require('icebreaker-network/lib/util')
+
+const filter = require('pull-async-filter')
 
 module.exports = () => {
   const dir = path.join(api.config.path, "addrs")
@@ -89,15 +92,23 @@ module.exports = () => {
         })
       })
   }
-
+  
   const addClient = (e) => {
     _(api.addrs({old:true,live:false}),
-    _.filter((item)=> item.key.indexOf("://"+api.id+"@")!=-1  && item.key.endsWith(api.config.appKey+"/protoNames") && !item.gw),
+    filter((item,cb) => {
+      if(item.key.indexOf("://"+api.id+"@") === -1) return cb(null,false)
+        const u =util.parseUrl(item.key)   
+        const path = u.pathname
+        api.friends.isFriend(u.auth, (err,isFriend)=> cb(null,isFriend && path && path.startsWith("/",api.config.appKey+"/protoNames") && !item.gw))
+      }
+      ),
     _.collect((err,addrs)=>{
       let maxts 
       addrs.forEach((item)=>{ maxts = Math.max(maxts||0,item.ts) })
       addrs=addrs.filter((addr)=>{ return addr.ts === maxts })
-      addrs = addrs.map((addr)=>{ return addr.key.replace("/protoNames","") })
+      addrs = addrs.map((addr)=>{ 
+        return addr.key.replace("/protoNames","") 
+      })
       addAddrs({addrs:[e.remoteAddress],peer:e.peer},(data)=>{
         data.gw = addrs
         return data

@@ -228,7 +228,7 @@ module.exports = () => {
 
       if (!spec[data.action]) spec[data.action] = {}
       if (!spec[data.action][url.auth]) spec[data.action][url.auth] = {}
-
+     
       let address = data.key.replace("/" + data.action.replace(".", "/"), "").replace("/" + api.config.appKey, "")
       const apiId = api.config.keys.publicKey
       
@@ -248,7 +248,7 @@ module.exports = () => {
       else if (spec[data.action][url.auth][address] == null || spec[data.action][url.auth][address] < data.ts)
         spec[data.action][url.auth][address] = data.ts
 
-
+        
       let keys = Object.keys(spec[data.action])
       .sort((a, b) => distance(utils.decode(a, api.config.encoding), apiId) - distance(utils.decode(b, api.config.encoding), apiId))
 
