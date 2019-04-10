@@ -107,10 +107,13 @@ module.exports = () => {
 
   _(api.events(), api.events.on({
     connection:(e)=>{
-      if(!e.peer.protoNames && e.remoteAddress!=null && e.peer){
+      api.friends.isFriend(e.peerID,(err,isFriend)=>{
+        if(!isFriend && e.remoteAddress!=null && e.peer){
           timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
           addClient(e)
-      }
+        }
+      })
+      
     },
     closer: (e) => {
       try {
