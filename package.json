@@ -47,6 +47,7 @@
     "osenv": "^0.1.5",
     "pull-abortable": "^4.1.1",
     "pull-async": "^1.0.0",
+    "pull-async-filter": "^1.0.0",
     "pull-defer": "^0.2.3",
     "pull-from-promise": "0.0.1",
     "pull-level": "^2.0.4",
