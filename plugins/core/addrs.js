@@ -128,9 +128,10 @@ module.exports = () => {
     },
     closer: (e) => {
       try {
-        if(e.remoteAddress)return
-        addAddrs(e)
-        timers.start(e.id,()=>addAddrs(e),api.config.pingInterval)
+        if(!e.remoteAddress){
+          addAddrs(e)
+          timers.start(e.id,()=>addAddrs(e),api.config.pingInterval)
+        }
         if (!e.peer.addrs) return
         if (!ls[e.id]) {
           const done = () => {
@@ -153,9 +154,8 @@ module.exports = () => {
 
     },
     notcloser: (e) => {
-      if(e.remoteAddress)return
-       
-      addAddrs(e)
+      if(!e.remoteAddress)addAddrs(e)
+        
       timers.stop(e.id)
       if (ls[e.id]) {
         ls[e.id].abort(true)
