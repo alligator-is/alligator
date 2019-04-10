@@ -99,7 +99,7 @@ module.exports = () => {
       if(item.key.indexOf("://"+api.id+"@") === -1) return cb(null,false)
         const u =util.parseUrl(item.key)   
         const path = u.pathname
-        api.friends.isFriend(u.auth, (err,isFriend)=> cb(null,isFriend && path && path.startsWith("/",api.config.appKey+"/protoNames") && !item.gw))
+        cb(null,api.friends.isFriend(u.auth, (err,isFriend)=> cb(null,isFriend && path && path.startsWith("/",api.config.appKey+"/protoNames") && !item.gw)))
       }
       ),
     _.collect((err,addrs)=>{
