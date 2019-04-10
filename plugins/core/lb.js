@@ -150,10 +150,10 @@ module.exports = () => {
 
 
   function remoteCall(type, path, args) {
-
+    
     const cb = _.isFunction(args[args.length - 1]) ? args[args.length - 1] : null
     if (cb) args.pop()
-
+    
     try {
       if (!spec[path]) return error(type, new Error("function " + path + " unarivable"), cb)
       const addrs = spec[path]
@@ -162,9 +162,9 @@ module.exports = () => {
       const key = rr(keys, robin[path] || 0)
       const address = Object.keys(spec[path][key])
       if (address.length === 0) return error(type, new Error("No address found for action " + path), cb)
-
+      
       robin[path] = keys._rr
-
+      
       const connect = (_cb, resolve, reject) => {
         let defer
         if (type == "source" || type == "sink" || type == "duplex") defer = Defer[type]()
@@ -173,8 +173,9 @@ module.exports = () => {
           if (err) return error(type, err, cb, defer)
           _cb(e, cb, defer)
         })
+        return defer
       }
-
+      
       if (!address[0].includes("//" + key + "@")) {
 
         const subCall = (resolve, reject) => {
@@ -182,7 +183,6 @@ module.exports = () => {
             try {
               if (!(e.peer.call && e.peer.call[type]))
                 return error(type, new Error("Type " + type + " not supported on " + e.peerID), cb, defer)
-
               if (defer) {
                 if (type == "sink")
                   return defer.resolve(e.peer.call[type](key, path, args, cb))
@@ -205,11 +205,11 @@ module.exports = () => {
       }
 
       const call = (resolve, reject) => {
-        connect((e, cb, defer) => {
+          return  connect((e, cb, defer) => {
           const f = flat.flatten(e.peer)
           if (!f[path]) return error(type, new Error("Action " + path + " not found on " + e.peerID), cb, defer)
-          if (defer) return defer.resolve(f[path](...args))
-          return f[path].call(null, ...args, cb)
+            if (defer) return defer.resolve(f[path](...args))            
+            return f[path].call(null, ...args, cb) 
         }, resolve, reject)
       }
 
