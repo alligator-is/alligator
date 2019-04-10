@@ -16,7 +16,7 @@ module.exports = () => {
   api.lb = api.actions.lb
   let lb = api.lb
 
-  let robin = {}
+  const robin = {}
 
   api.actions.call = {
    
@@ -159,12 +159,14 @@ module.exports = () => {
       const addrs = spec[path]
       const keys = Object.keys(addrs)
       if (keys.length === 0) return error(type, new Error("No address found for action " + path), cb)
-      const key = rr(keys, robin[path] || 0)
+      keys._rr  = robin[path]=robin[path] || 0
+      const key = rr(keys)
+      robin[path] = keys._rr++
       const address = Object.keys(spec[path][key])
       if (address.length === 0) return error(type, new Error("No address found for action " + path), cb)
-      
-      robin[path] = keys._rr
-      
+      console.log(address)
+
+      console.log("call" ,keys, key )
       const connect = (_cb, resolve, reject) => {
         let defer
         if (type == "source" || type == "sink" || type == "duplex") defer = Defer[type]()
