@@ -59,7 +59,7 @@ module.exports = () => {
   }
 
   api.connect = function (addresses, cb) {
-    
+
     if (api.shutdown === true) return cb(new Error("'peer cannot create new connections, because it is shutting down'"));
     if (_.isString(addresses)) addresses = [addresses]
     
@@ -72,7 +72,7 @@ module.exports = () => {
     })
     
     if (addrs.length === 0 && addresses.length > 0) return cb(new Error("protocol not found in Address:" + JSON.stringify(addresses)))
-    
+
     connect(addrs.shift(), {}, function cb2(err, con) {
       if (addrs.length > 0 && err != null) return connect(addrs.shift(), cb2)
       cb(err, con)

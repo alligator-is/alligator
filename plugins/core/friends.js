@@ -98,15 +98,14 @@ module.exports = () => {
       if (err) return cb(err);
       if (!(identity.groups && Array.isArray(identity.groups))) return cb("access denied for " + id);
 
-      if (identity.groups.indexOf(groupId) !== -1) return cb(null, "*")
+      if (identity.groups.indexOf(groupId) !== -1) return cb(null)
 
       _(identity.groups, _.asyncMap((group, cb) => api.groups.get(group, (err, data) => cb(err, data.allow || []))
       ), _.flatten(), _.unique(), _.collect((err, data) => {
         if (err) return cb(err)
-        if (data && data.length > 0) return data.allow.indexOf("*") !== -1 ? cb(null, null) : cb(null, data)
+        if (data && data.length > 0) return data.allow.indexOf("*") !== -1 ? cb(null) : cb(null, data)
         return cb("access denied for " + id);
       }))
     })
-  }
-  
+    }
 }

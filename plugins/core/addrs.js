@@ -106,7 +106,7 @@ module.exports = () => {
       let maxts 
       addrs.forEach((item)=>{ maxts = Math.max(maxts||0,item.ts) })
       addrs=addrs.filter((addr)=>{ return addr.ts === maxts })
-      addrs = addrs.map((addr)=>{ 
+      addrs = addrs.map((addr)=>{
         return addr.key.replace("/protoNames","") 
       })
       addAddrs({addrs:[e.remoteAddress],peer:e.peer},(data)=>{

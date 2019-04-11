@@ -1,4 +1,4 @@
-const { api, _, Action } = require("../../")
+const { api, _, Action} = require("../../")
 const path = require('path')
 const dir = path.join(api.config.path, "identities","data")
 const Flume = require('flumedb')
