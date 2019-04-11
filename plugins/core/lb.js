@@ -264,7 +264,6 @@ module.exports = () => {
       action[data.action] = data
       assign(lb, Remote(flat.unflatten(action), remoteCall))
       const f = flat.flatten(lb)
-      console.log(Remote(flat.unflatten(action)))
       const ts = Date.now() - api.config.connectionTimeout
 
       Object.keys(f).forEach((k) => {
