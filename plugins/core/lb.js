@@ -7,6 +7,7 @@ const rr = require('rr')
 const Defer = require('pull-defer')
 const distance = require('k-bucket').distance
 const unset = require('unset-value');
+const assign = require('assign-deep');
 
 module.exports = () => {
 
@@ -261,9 +262,9 @@ module.exports = () => {
       delete data.key
       delete data.gw
       action[data.action] = data
-
-      Object.assign(lb, Remote(flat.unflatten(action), remoteCall))
+      assign(lb, Remote(flat.unflatten(action), remoteCall))
       const f = flat.flatten(lb)
+      console.log(Remote(flat.unflatten(action)))
       const ts = Date.now() - api.config.connectionTimeout
 
       Object.keys(f).forEach((k) => {
