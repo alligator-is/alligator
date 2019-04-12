@@ -131,32 +131,44 @@ module.exports = () => {
   })
 
 
-  function error(type, error, cb, defer) {
+  function error(type, err, cb, defer) {
     if (type === "promise") {
-      if (defer) return defer.reject(error)
+      if (defer) return defer.reject(err)
 
       return new Promise((resolve, reject) => {
-        reject(error)
+        reject(err)
       });
+ 
     }
-
+    
     if (!cb) cb = _.isFunction(cb) ? cb : (err) => {
-      if (type == "duplex") return
+      if (type == "source" || type == "sink" || type == "duplex") return
       if (err) throw new Error(err || 'callback not provided')
     }
-    if (defer) defer.resolve(Util.errorAsStreamOrCb(type, error, cb))
+   
+    if (defer){
+        if(cb)cb(err)
+        defer.resolve(Util.errorAsStream(type, err))
+        return defer
+    }
+    if(type == "source" || type == "sink" || type == "duplex"){
+      if(cb)cb(err) 
+      return Util.errorAsStream(type, err,cb)
+    }
+    if(type == "async" ||"sync") return cb(err)
 
-    return Util.errorAsStreamOrCb(type, error, cb)
+    return Util.errorAsStreamOrCb(type, err,cb)
+   
   }
 
 
   function remoteCall(type, path, args) {
-    
+   path = _.isString(path)?path:Array.isArray(path)?path.join("."):path
+  
     const cb = _.isFunction(args[args.length - 1]) ? args[args.length - 1] : null
     if (cb) args.pop()
-    
     try {
-      if (!spec[path]) return error(type, new Error("function " + path + " unarivable"), cb)
+      if (!spec[path]) return error(type, new Error("function " + path.join(".") + " unarivable"), cb)
       const addrs = spec[path]
       const keys = Object.keys(addrs)
       if (keys.length === 0) return error(type, new Error("No address found for action " + path), cb)
@@ -169,6 +181,7 @@ module.exports = () => {
         let defer
         if (type == "source" || type == "sink" || type == "duplex") defer = Defer[type]()
         if (type == "promise") defer = { reject: reject, resolve: resolve }
+
         api.connect(address, (err, e) => {
           if (err) return error(type, err, cb, defer)
           _cb(e, cb, defer)
