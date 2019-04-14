@@ -92,18 +92,19 @@ module.exports = () => {
       })
     
   }
-
+ 
   api.config.perms = function (id, cb) {
     api.identities.get(id, (err, identity) => {
       if (err) return cb(err);
-      if (!(identity.groups && Array.isArray(identity.groups))) return cb("access denied for " + id);
-
-      if (identity.groups.indexOf(groupId) !== -1) return cb(null)
+      
+      if (!(identity.groups && Array.isArray(identity.groups))) return cb("access denied for " + id,{allow:[]});
+      if (identity.groups.indexOf(groupId) !== -1) 
+        return this.protocol && this.protocol.indexOf("+unix") !== -1?cb(null):cb(null,{deny:["stop"]})
 
       _(identity.groups, _.asyncMap((group, cb) => api.groups.get(group, (err, data) => cb(err, data.allow || []))
       ), _.flatten(), _.unique(), _.collect((err, data) => {
         if (err) return cb(err)
-        if (data && data.length > 0) return data.allow.indexOf("*") !== -1 ? cb(null) : cb(null, data)
+        if (data && data.length > 0) return data.indexOf("*") !== -1 ? cb(null) : cb(null, {allow:data||[],deny:["stop"]})
         return cb("access denied for " + id);
       }))
     })
