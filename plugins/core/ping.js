@@ -8,9 +8,7 @@ const Intervals = require("../../lib/intervals")
 
 module.exports = () => {
   const events = _.events()
-
   const end = events.end
-  
   const timers = new Intervals()
 
   events.end = (err) => {
@@ -19,11 +17,8 @@ module.exports = () => {
   }
 
   function isCloser(id, cb) {
-    const closer = api.dht.findNode(api.id).map((item) => { return item.id }).indexOf(id) !== -1
-    api.friends.isFriend(id, (err, isFriend) => {
-      if (err) return cb(err, false)
-      cb(null, isFriend && closer)
-    })
+    const closer = api.dht.findNode(api.id).map((item) => item.id).indexOf(id) !== -1
+    api.friends.isFriend(id, (err, isFriend) => cb(err, isFriend && closer))
   }
 
   api.dht.ping = function ping(e, cb) {
@@ -44,9 +39,8 @@ module.exports = () => {
         const u = util.parseUrl(address)
         delete u.host
 
-        const addr = protos.map((proto) => {
-          return address.replace(e.protocol, proto.name).replace(u.port, proto.port)
-        })
+        const addr = protos.map((proto) => address.replace(e.protocol, proto.name).replace(u.port, proto.port))
+
         return _(
           addr,
           _.unique(),
@@ -61,12 +55,12 @@ module.exports = () => {
 
               if (closer && e.isCloser != true) {
                 e.isCloser = true
-                events.emit({ type: 'closer', id: e.id, peerID: e.peerID, addrs: addrs,address:e.address, peer: e.peer, lastSeen: lastSeen })
+                events.emit({ type: 'closer', id: e.id, peerID: e.peerID, addrs: addrs, address: e.address, peer: e.peer, lastSeen: lastSeen })
               }
 
               if (!closer && e.isCloser != false) {
                 e.isCloser = false
-                events.emit({ type: 'notcloser', id: e.id, peerID: e.peerID, addrs: addrs, address:e.address,peer: e.peer, lastSeen: lastSeen })
+                events.emit({ type: 'notcloser', id: e.id, peerID: e.peerID, addrs: addrs, address: e.address, peer: e.peer, lastSeen: lastSeen })
               }
 
               return cb()
@@ -96,7 +90,7 @@ module.exports = () => {
                 if (!closer) {
                   if (e.isCloser != false) {
                     e.isCloser = false
-                    events.emit({ type: 'notcloser',address:e.address, id: e.id, peerID: e.peerID })
+                    events.emit({ type: 'notcloser', address: e.address, id: e.id, peerID: e.peerID })
                   }
 
                   if (api.dht.bucket.count() < api.config.bucketSize && api.dht.get(e.peerID) == null) api.dht.ping(e, (err) => { })
@@ -124,15 +118,13 @@ module.exports = () => {
         isCloser(e.peerID, (err, closer) => {
           if (!closer && e.isCloser != false) {
             e.isCloser = false
-            events.emit({ type: 'notcloser', id: e.id, address:e.address,peerID: e.peerID })
+            events.emit({ type: 'notcloser', id: e.id, address: e.address, peerID: e.peerID })
           }
         })
 
       },
 
-      end: function () {
-        timers.stopAll()
-      }
+      end: () => timers.stopAll()
 
     }))
 

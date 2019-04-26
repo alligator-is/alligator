@@ -164,7 +164,6 @@ module.exports = () => {
 
   function remoteCall(type, path, args) {
    path = _.isString(path)?path:Array.isArray(path)?path.join("."):path
-  
     const cb = _.isFunction(args[args.length - 1]) ? args[args.length - 1] : null
     if (cb) args.pop()
     try {
@@ -238,7 +237,6 @@ module.exports = () => {
     api.addrs({live:true,old:true}),
     _.drain((data) => {
       const url = utils.parseUrl(data.key)
-
       if (!spec[data.action]) spec[data.action] = {}
       if (!spec[data.action][url.auth]) spec[data.action][url.auth] = {}
       const u = utils.parseUrl(data.key)
