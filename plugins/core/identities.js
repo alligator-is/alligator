@@ -44,7 +44,7 @@ module.exports = () => {
           
           if(identities[identity.id] ){
             const obj = {}
-            Object.assign(obj,identities[identity.id])
+            Object.assign(obj,identities[identity.id])        
             delete obj.ts
             if(JSON.stringify(obj)  === JSON.stringify(identity)) return cb(null, identities[identity.id])
           }
@@ -52,7 +52,7 @@ module.exports = () => {
       
         
         identity.ts = Date.now()
-        
+        identity.delete=false;
         db.append(identity, (err, sec) => {
           if (db.closed) return cb(Error('cannot call: api.identities.put, flumedb instance is closed'))
           if (err) return cb(err)

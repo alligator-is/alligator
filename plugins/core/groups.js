@@ -45,7 +45,7 @@ module.exports = () => {
           }
         }
         group.ts = Date.now()
-        
+        group.delete=false;
         db.append(group, (err, sec) => {
           if (db.closed) return cb(Error("cannot call: api.groups.put, flumedb instance is closed"))
           if (err) return cb(err)
