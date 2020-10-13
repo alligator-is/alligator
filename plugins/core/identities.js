@@ -202,8 +202,7 @@ module.exports = () => {
 
   const end = events.end
   events.end = (err) => {
-    db.close(() => { })
-    end(err)
+    db.close(() => {  end(err) })
   }
 
   return events
