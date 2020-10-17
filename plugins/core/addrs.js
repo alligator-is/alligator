@@ -144,6 +144,7 @@ module.exports = () => {
       }
       ),
     _.collect((err,addrs)=>{
+      if(addrs.length === 0) return;
       let maxts 
       addrs.forEach((item)=>{ maxts = Math.max(maxts||0,item.ts) })
       addrs=addrs.filter((addr)=>{ return addr.ts === maxts })
