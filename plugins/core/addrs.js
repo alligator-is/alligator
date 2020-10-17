@@ -161,23 +161,17 @@ module.exports = () => {
     connection:(e)=>{
       if(e.remoteAddress)
       api.friends.isFriend(e.peerID,(err,isFriend)=>{
+        
         if(!isFriend &&  e.peer && e.peerID !== api.id){
           timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
-         addClient(e)
+           addClient(e)
          return
         }
 
-        if(isFriend && e.peer && e.peer.protoNames){
-          e.peer.protoNames(function(err,protos){
-            if(err) return;
-            if(!(protos && protos.length>0)){
-
+        if(isFriend && e.peer && !e.peer.protoNames && e.peerID !== api.id)
+        {
               timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
-              addClient(e)
-            }
-          
-            
-          })
+              addClient(e)  
         }
       })
       
