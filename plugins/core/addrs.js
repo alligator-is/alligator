@@ -181,7 +181,6 @@ module.exports = () => {
     closer: (e) => {
       try {
         if(e.address){
-          console.log("closer",e)
           addAddrs(e)
           timers.start(e.id,()=>addAddrs(e),api.config.pingInterval)
         }
