@@ -116,10 +116,12 @@ module.exports = () => {
   const addAddrs = (e,map) => {
     const ts = Date.now()
     if (e.addrs && e.peer)
-    e.addrs.forEach(addr=> {
+    e.addrs.forEach((addr,index)=> {
       traverse(e.peer).forEach(function () {
         if (_.isFunction(this.node)) {
-          let value = Object.assign({ key: addr + "/" + this.path.join("/"), ts: ts,action:this.path.join(".") },this.node)
+          let key = addr + "/" + this.path.join("/")
+          if(e.gw) key = key + "?gw="+e.gw[index]
+          let value = Object.assign({ key: key, ts: ts,action:this.path.join(".") },this.node)
           if(map) value =map(value)
           if(value.ts)
             add(value, (err) => {
@@ -153,10 +155,8 @@ module.exports = () => {
         return addr.key.replace("/protoNames","") 
       })
       
-      addAddrs({addrs:addrs.map((addr)=>e.remoteAddress),peer:e.peer},(data)=>{
-        console.log("addrs",addrs)
+      addAddrs({addrs:addrs.map((addr)=>e.remoteAddress),gw:addrs,peer:e.peer},(data)=>{
          data.key = data.key+"?gw="+ addrs.shift();
-         console.log("key",data.key)
         return data
       }
       )
