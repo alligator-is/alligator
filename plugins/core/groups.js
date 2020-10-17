@@ -15,7 +15,7 @@ module.exports = () => {
     if (item.id) {
       if (acc[item.id] && item.ts > acc[item.id].ts) acc[item.id] = item
       if (!acc[item.id]) acc[item.id] = item
-      if (acc[item.id].delete === true) delete acc[item.id]
+     // if (acc[item.id].delete === true) delete acc[item.id]
     }
     return acc
   }))
@@ -63,6 +63,7 @@ module.exports = () => {
     input: "string",
     desc: "remove the group by id" ,
     run: (id, cb) => {
+ 
       if (db.closed) return cb(Error("cannot call: api.groups.remove, flumedb instance is closed"))
         db.view.get(function(err,groups){
           if(err) cb(err) 
@@ -89,7 +90,7 @@ module.exports = () => {
          
       db.view.get(function(err,groups){
         if(err) return cb(err)
-        if(!groups[id]) return cb(new Error("Identity " + id +" not found!"))
+        if(!(groups[id] && groups[id].delete!==true)) return cb(new Error("Group " + id +" not found!"))
         cb(null,groups[id])
       })
     }

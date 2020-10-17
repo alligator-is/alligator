@@ -14,8 +14,7 @@ module.exports = () => {
     if (acc == null) acc = {}
     if (item.id) {
       if (acc[item.id] && item.ts > acc[item.id].ts) acc[item.id] = item
-      if (!acc[item.id]) acc[item.id] = item
-      if (acc[item.id].delete === true) delete acc[item.id]
+      if (!acc[item.id]) acc[item.id] = item  
     }
     return acc
   }))
@@ -79,7 +78,7 @@ module.exports = () => {
     
         db.view.get(function(err,identities){
           if(err) cb(err) 
-        if(!identities[id]) return cb(null,true)  
+        if(!(identities[id] && identities[id].delete !==true)) return cb(null,true)  
         db.append({
         id: id,
         ts: Date.now(),
@@ -92,7 +91,7 @@ module.exports = () => {
     }
   })
 
-  api.identities.get =  Action({
+  api.identities.get =  api.actions.identities.get = Action({
     type: "async",
     input: "string",
     desc: "gets the identity by id" ,
@@ -101,7 +100,7 @@ module.exports = () => {
      
       db.view.get((err,identities)=>{
         if(err) return cb(err)
-        if(!(identities && identities[id])) return cb(new Error("Identity " + id +" not found!"))
+        if(!(identities && identities[id] && identities[id].delete !== true)) return cb(new Error("Identity " + id +" not found!"))
         cb(null,identities[id])
       })
   }
