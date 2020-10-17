@@ -155,11 +155,25 @@ module.exports = () => {
 
   _(api.events(), api.events.on({
     connection:(e)=>{
+      console.log(e);
       if(e.remoteAddress)
       api.friends.isFriend(e.peerID,(err,isFriend)=>{
         if(!isFriend &&  e.peer && e.peerID !== api.id){
           timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
          addClient(e)
+        }
+  
+        if(isFriend && e.peer && e.peer.protoNames){
+          e.peer.protoNames(function(err,protos){
+            if(err) return;
+            if(!(protos && protos.length>0)){
+
+              timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
+              addClient(e)
+            }
+          
+            
+          })
         }
       })
       
@@ -167,6 +181,7 @@ module.exports = () => {
     closer: (e) => {
       try {
         if(e.address){
+          console.log("closer",e)
           addAddrs(e)
           timers.start(e.id,()=>addAddrs(e),api.config.pingInterval)
         }
