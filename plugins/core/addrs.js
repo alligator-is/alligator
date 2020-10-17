@@ -136,7 +136,6 @@ module.exports = () => {
       if(item.key.indexOf("://"+api.id+"@") === -1) return cb(null,true)
         const u =util.parseUrl(item.key)   
         const path = u.pathname
-        console.log(u)
         if(path && !path.startsWith("/"+api.config.appKey+"/protoNames")) return cb(null,true)
         api.friends.isFriend(u.auth, (err,isFriend)=> {
           return cb(null,!(isFriend && path && path.startsWith("/"+api.config.appKey+"/protoNames") && !u.query.gw))
@@ -144,6 +143,8 @@ module.exports = () => {
       }
       ),
     _.collect((err,addrs)=>{
+      if(err) return
+      if(!addrs) return
       if(addrs.length === 0) return;
       let maxts 
       addrs.forEach((item)=>{ maxts = Math.max(maxts||0,item.ts) })
@@ -151,10 +152,10 @@ module.exports = () => {
       addrs = addrs.map((addr)=>{
         return addr.key.replace("/protoNames","") 
       })
-      addAddrs({addrs:addrs.map((addr)=>e.remoteAddress),peer:e.peer},function(data){
-        data.key = data.key+"?gw="+this.addrs.shift()
+      addAddrs({addrs:addrs.slice(0).map((addr)=>e.remoteAddress),peer:e.peer},function(data){
+        data.key = data.key+"?gw="+this.addrs.shift();
         return data
-      }.bind({addrs:addrs}))
+      }.bind({addrs:addrs.slice(0)}))
     }))
   }
 
@@ -173,18 +174,21 @@ module.exports = () => {
         {
               timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
               addClient(e)  
+              return
+
         }
+
 
         if(isFriend && e.peer && e.peer.protoNames && e.peerID !== api.id)
         {
             e.peer.protoNames(function(err,protos){
+              if(err)return;
               if(protos.length===0){
 
                 timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
                 addClient(e)  
               }
 
-              if(err)return;
             })
         }
       })
