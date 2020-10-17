@@ -51,12 +51,17 @@ module.exports = () => {
       live: false,
       old: true
     },
-    run: (opts) => {
+    run: function(opts) {
+
       opts.old = opts.old === "true" || opts.old === true ? true : false
       opts.live = opts.live === "true" || opts.live === true ? true : false
       opts.keys = true
       opts.sync = false
+      
+      const peerID = this.id
+      
       return _(pl.read(db, opts),_.filter((item)=>{
+    
         if(!item)return false
         if(item.type!=="put" && item.type)return false
         if(!item.value)return false
@@ -71,7 +76,39 @@ module.exports = () => {
         }
         delete item.type
         return item.value.ts>ts
-      }),_.map((item)=>Object.assign({},item.value))
+      }),_.map((item)=>Object.assign({},item.value)),_.asyncMap((item,cb)=>{
+        if(!peerID) return     cb(null,item)
+        
+        api.friends.isFriend(peerID,function(err,isFriend){
+          if(err) return cb(null,undefined);
+          if(isFriend) return  cb(null,item)
+
+        api.identities.get(peerID,(err,identity)=>{
+          if(err) return cb(null,undefined);
+        
+          const  u = util.parseUrl(item.key)
+          api.identities.get(u.auth,(err,id)=>{
+            if(err) return cb(null,undefined)
+            for(g of identity.groups){
+              if(id.groups.indexOf(g) !== -1)
+              {
+                api.groups.get(g,function(err,group){
+                  if(err) return cb(null,undefined)
+                  if(group.allow.indexOf("*")!==-1||group.allow.indexOf(u.pathname.split("/").slice(2).join(".") !==-1))
+                  return cb(null,item)           
+                  return cb(null,undefined)
+
+                })
+
+              }
+            }
+            return cb(null,undefined);
+          })
+    
+        });
+      })
+
+      }),_.filter()
       )
     }
   })
