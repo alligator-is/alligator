@@ -155,11 +155,7 @@ module.exports = () => {
         return addr.key.replace("/protoNames","") 
       })
       
-      addAddrs({addrs:addrs.map((addr)=>e.remoteAddress),gw:addrs,peer:e.peer},(data)=>{
-         data.key = data.key+"?gw="+ addrs.shift();
-        return data
-      }
-      )
+      addAddrs({addrs:addrs.map((addr)=>e.remoteAddress),gw:addrs,peer:e.peer})
     }))
   }
 
