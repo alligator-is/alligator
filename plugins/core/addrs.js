@@ -145,13 +145,14 @@ module.exports = () => {
     _.collect(function(err,addrs){
       if(err) return
       if(!addrs) return
-      if(addrs.length === 0) return;
+      if(addrs.length <= 0) return;
       let maxts 
       addrs.forEach((item)=>{ maxts = Math.max(maxts||0,item.ts) })
       addrs=addrs.filter((addr)=>{ return addr.ts === maxts })
       addrs = addrs.map((addr)=>{
         return addr.key.replace("/protoNames","") 
       })
+      
       addAddrs({addrs:addrs.map((addr)=>e.remoteAddress),peer:e.peer},(data)=>{
         console.log("addrs",addrs)
          data.key = data.key+"?gw="+ addrs.shift();
@@ -186,7 +187,7 @@ module.exports = () => {
         {
             e.peer.protoNames(function(err,protos){
               if(err)return;
-              if(protos.length===0){
+              if(protos.length<=0){
 
                 timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
                 addClient(e)  
