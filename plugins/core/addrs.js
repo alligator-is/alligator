@@ -133,10 +133,14 @@ module.exports = () => {
   const addClient = (e) => {
     _(api.addrs({old:true,live:false}),
     filter((item,cb) => {
-      if(item.key.indexOf("://"+api.id+"@") === -1) return cb(null,false)
+      if(item.key.indexOf("://"+api.id+"@") === -1) return cb(null,true)
         const u =util.parseUrl(item.key)   
         const path = u.pathname
-        api.friends.isFriend(u.auth, (err,isFriend)=> cb(null,isFriend && path && path.startsWith("/",api.config.appKey+"/protoNames") && !item.gw))
+        if(path && !path.startsWith("/"+api.config.appKey+"/protoNames")) return cb(null,true)
+
+        api.friends.isFriend(u.auth, (err,isFriend)=> {
+          return cb(null,!(isFriend && path && path.startsWith("/"+api.config.appKey+"/protoNames") && !item.gw))
+        })
       }
       ),
     _.collect((err,addrs)=>{
@@ -160,8 +164,9 @@ module.exports = () => {
         if(!isFriend &&  e.peer && e.peerID !== api.id){
           timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
          addClient(e)
+         return
         }
-  
+
         if(isFriend && e.peer && e.peer.protoNames){
           e.peer.protoNames(function(err,protos){
             if(err) return;
