@@ -142,8 +142,7 @@ module.exports = () => {
         })
       }
       ),
-    _.collect((err,addrs)=>{
-      console.log("addrs",addrs)
+    _.collect(function(err,addrs){
       if(err) return
       if(!addrs) return
       if(addrs.length === 0) return;
@@ -153,11 +152,13 @@ module.exports = () => {
       addrs = addrs.map((addr)=>{
         return addr.key.replace("/protoNames","") 
       })
-      addAddrs({addrs:addrs.slice(0).map((addr)=>e.remoteAddress),peer:e.peer},function(data){
-        console.log("addAddrs",this.addrs)
-        data.key = data.key+"?gw="+this.addrs.shift();
+      addAddrs({addrs:addrs.map((addr)=>e.remoteAddress),peer:e.peer},(data)=>{
+        console.log("addrs",addrs)
+         data.key = data.key+"?gw="+ addrs.shift();
+         console.log("key",data.key)
         return data
-      }.bind({addrs:addrs.slice(0)}))
+      }
+      )
     }))
   }
 
