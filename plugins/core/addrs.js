@@ -136,7 +136,6 @@ module.exports = () => {
       if(item.key.indexOf("://"+api.id+"@") === -1) return cb(null,true)
         const u =util.parseUrl(item.key)   
         const path = u.pathname
-        console.log(path)
         if(path && !path.startsWith("/"+api.config.appKey+"/protoNames")) return cb(null,true)
         api.friends.isFriend(u.auth, (err,isFriend)=> {
           return cb(null,!(isFriend && path && path.startsWith("/"+api.config.appKey+"/protoNames") && !u.query.gw))
