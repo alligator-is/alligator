@@ -155,7 +155,6 @@ module.exports = () => {
 
   _(api.events(), api.events.on({
     connection:(e)=>{
-      console.log(e);
       if(e.remoteAddress)
       api.friends.isFriend(e.peerID,(err,isFriend)=>{
         if(!isFriend &&  e.peer && e.peerID !== api.id){
