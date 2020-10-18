@@ -202,7 +202,7 @@ function hasPerms(peerID,rPeerID,path,cb){
 
       const self = this;
       hasPerms(this.id,peerID,path,function(err,has){
-        if(has)  callAsync(peerID,path,args,cb)
+        if(has) return callAsync(peerID,path,args,cb)
         cb(new Error("No permissions to call " + path + " from "  + self.id +" on " + peerID))
       })
 
