@@ -121,9 +121,7 @@ module.exports = () => {
         if (_.isFunction(this.node)) {
           let key = addr + "/" + this.path.join("/")
           if(e.gw) key = key + "?gw="+e.gw[index]
-            var n = Object.assign({},this.node)
-           delete n.action;
-          let value = Object.assign({ key: key, ts: ts,action:this.path.join(".") },n)
+          let value = Object.assign({ key: key, ts: ts,action:this.path.join(".") },this.node)
           if(value.ts)
             add(value, (err) => {
               if (err) return api.log.error(err)
