@@ -9,9 +9,11 @@ const fs = require("fs")
 const test = api.config && api.config.test || null
 const name = process.env.alligator_appname || test || 'alligator'
 const dir = path.dirname(fs.realpathSync(__filename))
-
-
+const LB = require("./lib/lb")
+const url = require("url")
+const Timeout = require("./lib/timeout")
 const createStart = require("./lib/start")
+const assign = require('assign-deep');
 
 api.config.listen = api.config.listen || [
   'shs+tcp://[::]:4239'
@@ -24,12 +26,49 @@ if (address.ipv6() === "::1")
   ]
 
 require("./lib/logger")
+const config = {...api.config}
+config["wrap"]=  (d) => {
+  return Timeout(d, api.config.connectionTimeout, () => {
+    d.end()
+  })
+}
+const connect = Connect.bind(null, "shs+tcp+unix://" + encodeURIComponent(api.id) + "@" + path.join("/", os.tmpdir(), name + ".sock"), null,config)
+const network = require('icebreaker-network')
 
-const connect = Connect.bind(null, "shs+tcp+unix://" + encodeURIComponent(api.id) + "@" + path.join("/", os.tmpdir(), name + ".sock"), null, api.config)
+if(!api.connections) api.connections = {}
+let cid =0;
+if(!api.connect)api.connect = function(addresses,cb){
+  if (_.isString(addresses)) addresses = [addresses]
+    
+  const addrs = addresses.slice(0).filter(function (addr) {
+    return network.protoNames().indexOf(url.parse(addr).protocol) !== -1
+  })
+  .sort(function sortFunc(a, b) {
+    const sortingArr = network.protoNames()
+    return sortingArr.indexOf(url.parse(a[1]).protocol) - sortingArr.indexOf(url.parse(b[1]).protocol)
+  })
+  
+  if (addrs.length === 0 && addresses.length > 0) return cb(new Error("protocol not found in Address:" + JSON.stringify(addresses)))
+  
+    Connect(addrs.shift(), null, config,function cb2(err,con){
+        if(!err && con){
+          con.id = cid=++cid;
+          api.connections[con.id]=con;
+  
+        }
+    if (addrs.length > 0 && err != null) return Connect(addrs.shift(), null, config, cb2)
+      cb(err, con)
+ 
+  })
+}
+
+api.actions.lb={}
 
 if (!api.config.test)
 return connect((err, e) => {  
+  
   api.actions.start = createStart(e)
+  
   if (e && e.peer.protoNames) {
     let timer = setInterval(() => {
       e.peer.protoNames(() => { })
@@ -37,6 +76,10 @@ return connect((err, e) => {
     
     const end = e.end
     e.end = () => {
+      for(let c in api.connections){
+        if(api.connections[c] && api.connections[c].end)api.connections[c].end()
+      }
+      api.connections={}
       clearInterval(timer)
       end()
     }
@@ -70,6 +113,17 @@ return connect((err, e) => {
   })
 
   if (e) Object.assign(api.actions, e.peer)
+  if(e && e.peer.addrs){
+  
+    return LB({config:api.config,addrs:e.peer.addrs,connect:api.connect,live:false},function(lb){      
+     assign(api.actions.lb,lb)  
+     if (!api.config.test)
+     return CLI(api, (err) => {
+       if (e) setTimeout(e.end, 100)
+     });
+    })  
+    
+   }
 
   if (!api.config.test)
     return CLI(api, (err) => {
