@@ -89,7 +89,7 @@ module.exports = () => {
           const  u = util.parseUrl(item.key)
           api.identities.get(u.auth,(err,id)=>{
             if(err) return cb(null,undefined)
-            for(g of identity.groups){
+            for(let g of identity.groups){
               if(id.groups.indexOf(g) !== -1)
               {
                 api.groups.get(g,function(err,group){
@@ -120,7 +120,7 @@ module.exports = () => {
       traverse(e.peer).forEach(function () {
         if (_.isFunction(this.node)) {
           let key = addr + "/" + this.path.join("/")
-          if(e.gw) key = key + "?gw="+e.gw[index]
+          if(e.gw) key = key + "?gw="+encodeURIComponent(e.gw[index])        
           let value = Object.assign({ key: key, ts: ts,action:this.path.join(".") },this.node)
           if(value.ts)
             add(value, (err) => {
@@ -162,7 +162,6 @@ module.exports = () => {
     connection:(e)=>{
       if(e.remoteAddress)
       api.friends.isFriend(e.peerID,(err,isFriend)=>{
-        
         if(!isFriend &&  e.peer && e.peerID !== api.id){
           timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
            addClient(e)
