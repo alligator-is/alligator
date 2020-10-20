@@ -185,19 +185,26 @@ function hasPerms(peerID,rPeerID,path,cb){
     desc: "This run a async or sync action on peerID",
     run: function(peerID, path, args, cb)  {
       if(!this.id) return cb(new Error("No permissions to call " + path + " from "  + self.id +" on " + peerID))
-      
       const callAsync = (peerID,path,args,cb)=>{   
+      let found
+      let foundPeer
       for (let k in api.connections) {
         let c = api.connections[k]
         if (c.peerID === peerID && c.peer) {
           const f = flat.flatten(c.peer)
-          if (!f[path]) return cb(new Error("Action " + path + " not found on " + peerID))
-          if (f[path].type !== "sync" && f[path].type !== "async") return cb(new Error("Action " + path + " type is not sync or async on " + peerID))
-          return f[path](...args)
+          if(f[path])found = f[path]
+          foundPeer=true
         }
+
       }
 
-        cb(new Error("No Peer with id" + peerID + " found on " + api.id))
+      
+      if(!foundPeer) returncb(new Error("No Peer with id" + peerID + " found on " + api.id))
+      if (!found) return cb(new Error("Action " + path + " not found on " + peerID))
+      if (found.type !== "sync" && found.type !== "async") return cb(new Error("Action " + path + " type is not sync or async on " + peerID))
+      return found(...args)
+   
+
       }
 
       const self = this;
