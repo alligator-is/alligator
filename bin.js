@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const { Action, _, api } = require('./')
-const { Connect, Local } = require("icebreaker-rpc")
+const { Connect } = require("icebreaker-rpc")
 const path = require('path')
 const os = require('os')
 const CLI = require("./lib/cli")
@@ -35,40 +35,50 @@ config["wrap"]=  (d) => {
 const connect = Connect.bind(null, "shs+tcp+unix://" + encodeURIComponent(api.id) + "@" + path.join("/", os.tmpdir(), name + ".sock"), null,config)
 const network = require('icebreaker-network')
 
-if(!api.connections) api.connections = {}
-let cid =0;
-if(!api.connect)api.connect = function(addresses,cb){
-  if (_.isString(addresses)) addresses = [addresses]
-    
-  const addrs = addresses.slice(0).filter(function (addr) {
-    return network.protoNames().indexOf(url.parse(addr).protocol) !== -1
-  })
-  .sort(function sortFunc(a, b) {
-    const sortingArr = network.protoNames()
-    return sortingArr.indexOf(url.parse(a[1]).protocol) - sortingArr.indexOf(url.parse(b[1]).protocol)
-  })
-  
-  if (addrs.length === 0 && addresses.length > 0) return cb(new Error("protocol not found in Address:" + JSON.stringify(addresses)))
-  
-    Connect(addrs.shift(), null, config,function cb2(err,con){
-        if(!err && con){
-          con.id = cid=++cid;
-          api.connections[con.id]=con;
-  
-        }
-    if (addrs.length > 0 && err != null) return Connect(addrs.shift(), null, config, cb2)
-      cb(err, con)
- 
-  })
-}
 
 api.actions.lb={}
 
 if (!api.config.test)
 return connect((err, e) => {  
+  function SingleConnect(address,local,opts,cb){
+    const id = url.parse(address).auth
+    for (let k in api.connections) {
+      let c = api.connections[k]
+      if (c.peerID === id) return cb(null, c)
+    }
+    Connect(address,local,opts,cb)
+  }
+  if(!api.connections) api.connections = {}
+  let cid =0;
+
+  if(!api.connect && e)api.connect = function(addresses,cb){
+    if (_.isString(addresses)) addresses = [addresses]
+      
+    const addrs = addresses.slice(0).filter(function (addr) {
+      return network.protoNames().indexOf(url.parse(addr).protocol) !== -1
+    })
+    .sort(function sortFunc(a, b) {
+      const sortingArr = network.protoNames()
+      return sortingArr.indexOf(url.parse(a[1]).protocol) - sortingArr.indexOf(url.parse(b[1]).protocol)
+    })
+    
+    if (addrs.length === 0 && addresses.length > 0) return cb(new Error("protocol not found in Address:" + JSON.stringify(addresses)))
+    
+      SingleConnect(addrs.shift(), null, config,function cb2(err,con){
+          if(!err && con){
+            con.id = cid=++cid;
+            api.connections[con.id]=con;
+    
+          }
+      if (addrs.length > 0 && err != null) return SingleConnect(addrs.shift(), null, config, cb2)
+        cb(err, con)
+   
+    })
   
+  };
+
   api.actions.start = createStart(e)
-  
+
   if (e && e.peer.protoNames) {
     let timer = setInterval(() => {
       e.peer.protoNames(() => { })
