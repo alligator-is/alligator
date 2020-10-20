@@ -5,6 +5,7 @@ const promisify = require('util').promisify;
 module.exports = () => {
  
 function hasPerms(peerID,rPeerID,path,cb){
+
   api.friends.isFriend(peerID,(err,isFriend)=>{
     if(err) return cb(err,false)
     if(isFriend) return cb(null,true)
@@ -211,7 +212,7 @@ function hasPerms(peerID,rPeerID,path,cb){
 
       const self = this;
       hasPerms(this.id,peerID,path,(err,has)=>{
-        if(has) return callAsync()
+        if(has) return callAsync(peerID,path,args,cb)
         cb(new Error("No permissions to call " + path + " from "  + self.id +" on " + peerID))
       })
 
