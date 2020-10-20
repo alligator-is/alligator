@@ -157,7 +157,7 @@ function hasPerms(peerID,rPeerID,path,cb){
             const f = flat.flatten(c.peer)
             if (!f[path]) return error(new Error("Action " + path + " not found on " + peerID))
             if (f[path].type !== "sink") return error(new Error("Action " + path + " type is not a sink on " + peerID))
-            return f[path](...args)
+            return f[path](...args,cb)
           }
         }
 
@@ -185,7 +185,7 @@ function hasPerms(peerID,rPeerID,path,cb){
     desc: "This run a async or sync action on peerID",
     run: function(peerID, path, args, cb)  {
       if(!this.id) return cb(new Error("No permissions to call " + path + " from "  + self.id +" on " + peerID))
-      const callAsync = (peerID,path,args,cb)=>{   
+      const callAsync = (peerID,path,args,cb)=>{
       let found
       let foundPeer
       for (let k in api.connections) {
@@ -193,6 +193,7 @@ function hasPerms(peerID,rPeerID,path,cb){
         if (c.peerID === peerID && c.peer) {
           const f = flat.flatten(c.peer)
           if(f[path])found = f[path]
+      
           foundPeer=true
         }
 
@@ -202,14 +203,15 @@ function hasPerms(peerID,rPeerID,path,cb){
       if(!foundPeer) return cb(new Error("No Peer with id" + peerID + " found on " + api.id))
       if (!found) return cb(new Error("Action " + path + " not found on " + peerID))
       if (found.type !== "sync" && found.type !== "async") return cb(new Error("Action " + path + " type is not sync or async on " + peerID))
-      return found(...args)
+      
+      return found(...args,cb)
    
 
       }
 
       const self = this;
-      hasPerms(this.id,peerID,path,function(err,has){
-        if(has) return callAsync(peerID,path,args,cb)
+      hasPerms(this.id,peerID,path,(err,has)=>{
+        if(has) return callAsync()
         cb(new Error("No permissions to call " + path + " from "  + self.id +" on " + peerID))
       })
 
