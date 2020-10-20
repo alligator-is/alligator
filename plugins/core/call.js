@@ -199,7 +199,7 @@ function hasPerms(peerID,rPeerID,path,cb){
       }
 
       
-      if(!foundPeer) returncb(new Error("No Peer with id" + peerID + " found on " + api.id))
+      if(!foundPeer) return cb(new Error("No Peer with id" + peerID + " found on " + api.id))
       if (!found) return cb(new Error("Action " + path + " not found on " + peerID))
       if (found.type !== "sync" && found.type !== "async") return cb(new Error("Action " + path + " type is not sync or async on " + peerID))
       return found(...args)
