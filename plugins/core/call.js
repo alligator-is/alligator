@@ -1,7 +1,7 @@
 const { api, _, Action } = require("../..")
 const flat = require("flat")
 const promisify = require('util').promisify;
-
+const defer = require('pull-defer')
 module.exports = () => {
  
 function hasPerms(peerID,rPeerID,path,cb){
@@ -85,7 +85,6 @@ function hasPerms(peerID,rPeerID,path,cb){
           return _.error(new Error("No Peer with id" + peerID + " found on " + api.id))
         }
 
-        
         const deferred = defer.source();
         const self = this;
         hasPerms(this.id,peerID,path,function(err,has){
