@@ -12,17 +12,17 @@ function hasPerms(peerID,rPeerID,path,cb){
     api.identities.get(peerID,(err,identity)=>{
       if(err) return cb(err,false)
       if(identity.groups && idenitiy.groups.length >0){
-        api.identities.get(rPeerID,function(err,rIdnetity){
+        api.identities.get(rPeerID,function(err,rIdentity){
           if(err) return cb(err,false)
         
-          if(rIdnetity.groups && rIdnetity.groups.length >0){
-            _(idnetity.groups,_.asycMap(function(g,cb){
+          if(rIdentity.groups && rIdentity.groups.length >0){
+            _(rIdentity.groups,_.asycMap(function(g,cb){
               api.groups.get(g,(err,g2)=>{
                 if(err) return (null,undefined)
                 return cb(null,g2)
               })   
             }),_.filter(),_.filter(function(g){
-                return g.allow.indexOf(path) ==-1 && rIdnetity.groups.indexOf(g) ==-1 
+                return g.allow.indexOf(path) ==-1 && rIdentity.groups.indexOf(g) ==-1 
             }),_.collect(function(err,groups){
               if(Array.isArray(groups) && groups.length>0)   return cb(null,true)
          
