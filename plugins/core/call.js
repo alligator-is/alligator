@@ -2,43 +2,41 @@ const { api, _, Action } = require("../..")
 const flat = require("flat")
 const promisify = require('util').promisify;
 const defer = require('pull-defer')
+
 module.exports = () => {
  
-function hasPerms(peerID,rPeerID,path,cb){
+function hasPerms(peerID, rPeerID, path, cb) {
 
-  api.friends.isFriend(peerID,(err,isFriend)=>{
-    if(err) return cb(err,false)
-    if(isFriend) return cb(null,true)
-    api.identities.get(peerID,(err,identity)=>{
-      if(err) return cb(err,false)
-      if(identity.groups && identity.groups.length >0){
-        api.identities.get(rPeerID,function(err,rIdentity){
-          if(err) return cb(err,false)
-        
-          if(rIdentity.groups && rIdentity.groups.length >0){
-            _(identity.groups,_.asyncMap(function(g,cb){
-              api.groups.get(g,(err,g2)=>{
-                if(err) return (null,undefined)
-                return cb(null,g2)
-              })   
-            }),_.filter(),_.filter(function(g){
-                return g.allow.indexOf(path) ==-1 && rIdentity.groups.indexOf(g) ==-1 
-            }),_.collect(function(err,groups){
-              if(Array.isArray(groups) && groups.length>0)   return cb(null,true)
-         
-              return cb(null,false)
-            }))
-            return   
-          }
-          cb(null,false)
-      
+  api.friends.isFriend(peerID, (err, isFriend) => {
+    if(err) return cb(err, false)
+    if(isFriend) return cb(null, true)
+    api.identities.get(peerID, (err, identity) => {
+      if(err) return cb(err, false)
+      if(identity.groups && identity.groups.length > 0) {
+        api.identities.get(rPeerID, function (err, rIdentity) {
+          if (err) return cb(err, false)
+          if (rIdentity.groups && rIdentity.groups.length > 0) {
+            _(identity.groups, _.asyncMap(function (g, cb) { 
+              api.groups.get(g, (err, g2) => { if (err) return (null, undefined)
+                return cb(null, g2) }) }),
+                _.filter(), 
+                _.filter(function (g) { return g.allow.indexOf(path) !== -1 && rIdentity.groups.indexOf(g.id) !== -1 }), 
+                _.collect(function (err, groups) {
+                    if (Array.isArray(groups) && groups.length > 0) return cb(null, true)
+                    return cb(null, false)
+                })
+            )
+            return
+          } 
+            cb(null, false)
         })
         return
       }
-      cb(null,false)
+      cb(null, false)
     })
   })
 }
+
 
   api.actions.call = {
    
