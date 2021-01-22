@@ -11,12 +11,12 @@ function hasPerms(peerID,rPeerID,path,cb){
     if(isFriend) return cb(null,true)
     api.identities.get(peerID,(err,identity)=>{
       if(err) return cb(err,false)
-      if(identity.groups && idenitiy.groups.length >0){
+      if(identity.groups && identity.groups.length >0){
         api.identities.get(rPeerID,function(err,rIdentity){
           if(err) return cb(err,false)
         
           if(rIdentity.groups && rIdentity.groups.length >0){
-            _(rIdentity.groups,_.asycMap(function(g,cb){
+            _(identity.groups,_.asycMap(function(g,cb){
               api.groups.get(g,(err,g2)=>{
                 if(err) return (null,undefined)
                 return cb(null,g2)
