@@ -9,9 +9,9 @@ const fs = require("fs")
 const test = api.config && api.config.test || null
 const name = process.env.alligator_appname || test || 'alligator'
 const dir = path.dirname(fs.realpathSync(__filename))
-const LB = require("./lib/lb")
+const LB = require("alligator-client/lb")
 const url = require("url")
-const Timeout = require("./lib/timeout")
+const Timeout = require("alligator-client/timeout")
 const createStart = require("./lib/start")
 const assign = require('assign-deep');
 

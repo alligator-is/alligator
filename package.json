@@ -1,6 +1,6 @@
 {
   "name": "alligator",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -25,6 +25,7 @@
     "url": "https://github.com/alligator-io/alligator.git"
   },
   "dependencies": {
+    "alligator-client": "1.0.0",
     "chalk": "^4.1.0",
     "cuid": "^2.1.8",
     "encoding-down": "^6.3.0",
