@@ -1,1 +1,3 @@
 /node_modules/
+.test/
+ecosystem2.config.js

@@ -1,3 +1,5 @@
 .*
 appveyor.yml
 .travis.yml
+ecosystem.config.js
+ecosystem2.config.js
