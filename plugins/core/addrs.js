@@ -160,6 +160,7 @@ module.exports = () => {
 
   _(api.events(), api.events.on({
     connection:(e)=>{
+      if(!e.peerID) return;
       if(e.remoteAddress)
       api.friends.isFriend(e.peerID,(err,isFriend)=>{
         if(!isFriend &&  e.peer && e.peerID !== api.id){
@@ -229,6 +230,7 @@ module.exports = () => {
       }
     },
     replicate: (e) => {
+      if(!e.peerID) return;
       try {
         api.log('Replicating addresses from peer', e.peerID)
 
@@ -243,6 +245,7 @@ module.exports = () => {
       }
     },
     disconnection:(e)=>{
+      if(!e.peerID) return;
       timers.stop(e.id)
     },
     end: (e) => {

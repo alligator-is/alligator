@@ -79,7 +79,7 @@ module.exports = () => {
     api.events.on({
 
       connection: (e) => {
-
+        if(!e.peerID) return;
         if (e.protocol.indexOf("+unix") !== -1) return
 
         api.dht.ping(e, (err) => {
@@ -111,6 +111,8 @@ module.exports = () => {
       },
 
       disconnection: (e) => {
+        if(!e.peerID) return;
+
         timers.stop(e.id)
 
         if (e.peerID) api.dht.bucket.remove(util.decode(e.peerID, api.config.encoding))
