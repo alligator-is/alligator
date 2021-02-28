@@ -17,12 +17,12 @@
   "author": "Markus Wunderlin",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/alligator-io/alligator/issues"
+    "url": "https://github.com/alligator-is/alligator/issues"
   },
-  "homepage": "https://github.com/alligator-io/alligator",
+  "homepage": "https://github.com/alligator-is/alligator",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alligator-io/alligator.git"
+    "url": "https://github.com/alligator-is/alligator.git"
   },
   "dependencies": {
     "alligator-client": "1.0.8",
