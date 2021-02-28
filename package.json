@@ -1,6 +1,6 @@
 {
   "name": "alligator",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -25,18 +25,18 @@
     "url": "https://github.com/alligator-io/alligator.git"
   },
   "dependencies": {
-    "alligator-client": "1.0.7",
+    "alligator-client": "1.0.8",
     "chalk": "^4.1.0",
     "cuid": "^2.1.8",
     "encoding-down": "^6.3.0",
-    "flat": "^4.1.1",
+    "flat": "^5.0.2",
     "flumecodec": "0.0.1",
     "flumedb": "^2.1.8",
     "flumelog-offset": "^3.4.4",
     "flumeview-reduce": "^1.4.0",
-    "icebreaker-network": "^1.0.10",
-    "icebreaker-rpc": "^1.5.8",
-    "k-bucket": "^5.0.0",
+    "icebreaker-network": "^1.0.11",
+    "icebreaker-rpc": "^1.5.9",
+    "k-bucket": "^5.1.0",
     "leveldown": "^5.6.0",
     "levelup": "^4.4.0",
     "minimist": "^1.2.5",
@@ -61,6 +61,6 @@
   },
   "devDependencies": {
     "nodejs-fs-utils": "^1.2.5",
-    "tape": "^5.1.1"
+    "tape": "^5.2.1"
   }
 }
