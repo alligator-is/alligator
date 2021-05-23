@@ -45,14 +45,12 @@ module.exports = () => {
       old: true
     },
     run: function(opts) {
-
       opts.old = opts.old === "true" || opts.old === true ? true : false
       opts.live = opts.live === "true" || opts.live === true ? true : false
       opts.keys = true
       opts.sync = false
       
       return _(pl.read(db, opts),_.filter((item)=>{
-    
         if(!item)return false
         if(item.type!=="put" && item.type)return false
         if(!item.value)return false
@@ -124,7 +122,6 @@ module.exports = () => {
     },
  
     end: (e) => {
- 
     }
 
   }))
