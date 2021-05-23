@@ -29,6 +29,12 @@ alligator start --logLevel 6 --listen "shs+tcp://[::]:81" --listen "shs+ws:
 alligator lb.groups.ls lb.addrs lb.protoNames
 ```
 
+## Run client
+```
+npm install -g alligator
+node bin run --bootstrap  "shs+ws://Server1PublicKey@IPServer1:80"
+```
+
 ### The admin interface is located at http://alligator.is.
 
 ## License
