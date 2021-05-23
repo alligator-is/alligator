@@ -153,7 +153,16 @@ return connect((err, e) => {
      assign(api.actions.lb,lb)  
      if (!api.config.test)
      return CLI(api, (err) => {
-       if (e) setTimeout(e.end, 100)
+    
+       if (e) setTimeout(function(){
+
+          for( var i in api.connections){
+            if(api.connections[i]&&api.connections[i].end)api.connections[i].end()
+          }
+        
+        e.end();
+      
+       }, 100)
      });
     })  
     
