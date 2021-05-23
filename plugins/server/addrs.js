@@ -186,6 +186,7 @@ module.exports = () => {
 
                 timers.start(e.id, ()=>addClient(e), api.config.pingInterval)
                 addClient(e)  
+                
               }
 
             })
@@ -212,7 +213,7 @@ module.exports = () => {
           ls[e.id] = Abortable(done)
 
           api.log.info('Listen to live address changes from', e.peerID, "on", api.id)
-          _(e.peer.addrs({ old: true, live: true }), ls[e.id], write(), _.onEnd(done))
+          _(e.peer.addrs({ old: false, live: true }), ls[e.id], write(), _.onEnd(done))
         }
       }
       catch (err) {

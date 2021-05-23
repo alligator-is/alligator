@@ -35,6 +35,30 @@ config["wrap"]=  (d) => {
 const connect = Connect.bind(null, "shs+tcp+unix://" + encodeURIComponent(api.id) + "@" + path.join("/", os.tmpdir(), name + ".sock"), null,config)
 const network = require('icebreaker-network')
 
+function createRun(opts){
+  return Action({
+    type: "async",
+    desc: "Starts the client",
+    usage: {
+      target: "path, to your project directory",
+    },
+    input: {
+      target: "string?",
+      logLevel: "number",
+      bootstrap: "array?|string?"
+    },
+    defaults: {
+      listen: api.config.listen,
+      logLevel: api.config.logLevel
+    },
+    run: (opts, cb) => {
+      opts = opts||{}
+      opts.listen=[]
+      opts.server=false
+      api.actions.start(opts,cb)
+    }
+  })
+}
 
 api.actions.lb={}
 
@@ -78,6 +102,7 @@ return connect((err, e) => {
   };
 
   api.actions.start = createStart(e)
+  api.actions.run  = createRun()
 
   if (e && e.peer.protoNames) {
     let timer = setInterval(() => {
@@ -124,7 +149,6 @@ return connect((err, e) => {
 
   if (e) Object.assign(api.actions, e.peer)
   if(e && e.peer.addrs){
-  
     return LB({config:api.config,addrs:e.peer.addrs,connect:api.connect,live:false},function(lb){      
      assign(api.actions.lb,lb)  
      if (!api.config.test)
@@ -143,3 +167,6 @@ return connect((err, e) => {
 })
 
 api.actions.start = createStart()
+api.actions.run  = createRun()
+
+

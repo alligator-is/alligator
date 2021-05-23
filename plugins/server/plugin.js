@@ -1,0 +1,5 @@
+module.exports[0] = require("./groups")
+module.exports[1] = require("./friends")
+module.exports[2] = require("./identities")
+module.exports[3] = require("./call")
+module.exports[4] = require("./addrs")

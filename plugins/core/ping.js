@@ -10,37 +10,38 @@ module.exports = () => {
   const events = _.events()
   const end = events.end
   const timers = new Intervals()
-
+  
   events.end = (err) => {
     timers.stopAll()
     end(err)
   }
-
+  
   function isCloser(id, cb) {
     const closer = api.dht.findNode(api.id).map((item) => item.id).indexOf(id) !== -1
+    if(!api.friends || !api.friends.isFriend) return cb(null,closer)
     api.friends.isFriend(id, (err, isFriend) => cb(err, isFriend && closer))
   }
-
+  
   api.dht.ping = function ping(e, cb) {
-
+    
     if (api.shutdown === true) return cb(new Error("'peer cannot ping " + e.peerID + ", because it is shutting down'"));
-
+    
     api.log.debug('ping peer', e.peerID, "on", api.id)
-
     if (!e.peer.protoNames) return cb(new Error("peer.protoNames not found"))
+    
     e.peer.protoNames((err, protos) => {
       api.log.debug('pinged peer ', e.peerID, "on", api.id)
-
+      
       if (err || !Array.isArray(protos)) return cb(err || new Error("result of protoNames is not a array"))
-
+      
       if (protos.length == 0) return cb(new Error("peer " + e.peerID + "listening on no protocols"))
       if ((e.address != null || e.remoteAddress != null)) {
         let address = e.address || e.remoteAddress
         const u = util.parseUrl(address)
         delete u.host
-
+        
         const addr = protos.map((proto) => address.replace(e.protocol, proto.name).replace(u.port, proto.port))
-
+        
         return _(
           addr,
           _.unique(),
@@ -52,7 +53,6 @@ module.exports = () => {
             api.dht.bucket.add({ id: util.decode(e.peerID, api.config.encoding), addrs: addrs, lastSeen: lastSeen })
 
             isCloser(e.peerID, (err, closer) => {
-
               if (closer && e.isCloser != true) {
                 e.isCloser = true
                 events.emit({ type: 'closer', id: e.id, peerID: e.peerID, addrs: addrs, address: e.address, peer: e.peer, lastSeen: lastSeen })
