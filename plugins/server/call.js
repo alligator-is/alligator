@@ -115,7 +115,7 @@ function hasPerms(peerID, rPeerID, path, cb) {
             if (c.peerID === peerID && c.peer) {
               const f = flat.flatten(c.peer)
               if (!f[path]) return error(new Error("Action " + path + " not found on " + peerID))
-              if (f[path].type !== "source") return error(new Error("Action " + path + " type is not a source on " + peerID))
+              if (f[path].type !== "duplex") return error(new Error("Action " + path + " type is not a duplex on " + peerID))
               return f[path](...args)
             }
           }
